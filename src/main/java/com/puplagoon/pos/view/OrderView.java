@@ -88,6 +88,7 @@ public class OrderView extends JPanel {
     // OrderTable operations (OrderPanel)
     public void addOrderDetail(OrderDetail detail) {
         orderPanel.addOrderItem(
+                detail.getProduct().getImage(),
                 detail.getProduct().getCategory() + " " + detail.getProduct().getSize(),
                 detail.getQuantity(),
                 detail.getUnitPrice(),

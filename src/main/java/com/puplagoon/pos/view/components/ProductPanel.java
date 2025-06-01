@@ -11,16 +11,59 @@ import java.util.List;
 public class ProductPanel extends JPanel {
     private final JTable productTable;
     private final ProductTableModel tableModel;
+    private final JLabel imagePreview;
 
     public ProductPanel() {
         this.tableModel = new ProductTableModel();
         this.productTable = new JTable(tableModel);
+        this.imagePreview = new JLabel();
+        this.imagePreview.setHorizontalAlignment(JLabel.CENTER);
+        this.imagePreview.setPreferredSize(new Dimension(400, 50));
         initializeUI();
     }
 
     private void initializeUI() {
         setLayout(new BorderLayout());
-        add(new JScrollPane(productTable), BorderLayout.CENTER);
+
+        // Main product table with scroll
+        JScrollPane tableScroll = new JScrollPane(productTable);
+
+        // Right panel for image preview
+        JPanel rightPanel = new JPanel(new BorderLayout());
+        rightPanel.add(imagePreview, BorderLayout.CENTER);
+        rightPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // Add selection listener for image preview
+        productTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                updateImagePreview();
+            }
+        });
+
+        // Combine components
+        add(tableScroll, BorderLayout.CENTER);
+        add(rightPanel, BorderLayout.EAST);
+    }
+
+    private void updateImagePreview() {
+        Product product = getSelectedProduct();
+        if (product == null || product.getImage() == null) {
+            imagePreview.setIcon(null);
+            imagePreview.setText("No Image");
+            return;
+        }
+
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getResource("/assets/" + product.getImage()));
+            Image scaledImage = icon.getImage().getScaledInstance(
+                    imagePreview.getWidth(),
+                    imagePreview.getHeight(),
+                    Image.SCALE_SMOOTH);
+            imagePreview.setIcon(new ImageIcon(scaledImage));
+        } catch (Exception e) {
+            imagePreview.setIcon(null);
+            imagePreview.setText("Image Missing");
+        }
     }
 
     public void setProducts(List<Product> products) {
@@ -70,7 +113,7 @@ public class ProductPanel extends JPanel {
                 case 1 -> p.getCategory();
                 case 2 -> p.getSize();
                 case 3 -> p.getSugarLevel();
-                case 4 -> p.getPrice();
+                case 4 -> String.format("₱%.2f", p.getPrice());
                 default -> null;
             };
         }

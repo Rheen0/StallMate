@@ -19,18 +19,50 @@ public class OrderPanel extends JPanel {
     public OrderPanel() {
         this.detailList = new ArrayList<>();
         this.tableModel = new DefaultTableModel(
-                new Object[] { "Product", "Quantity", "Price", "Subtotal" }, 0);
+                new Object[] { "Image", "Product", "Quantity", "Price", "Subtotal" }, 0) {
+            @Override
+            public Class<?> getColumnClass(int column) {
+                if (column == 0)
+                    return ImageIcon.class;
+                return Object.class;
+            }
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Make table non-editable
+            }
+        };
         this.orderTable = new JTable(tableModel);
+        orderTable.setRowHeight(50);
         initializeUI();
     }
 
     private void initializeUI() {
         setLayout(new BorderLayout());
+        orderTable.setIntercellSpacing(new Dimension(10, 5));
+        orderTable.setShowGrid(false);
         add(new JScrollPane(orderTable), BorderLayout.CENTER);
     }
 
-    public void addOrderItem(String productName, int qty, double price, double subtotal) {
-        tableModel.addRow(new Object[] { productName, qty, price, subtotal });
+    public void addOrderItem(String imageFilename, String productName, int qty, double price, double subtotal) {
+        // Load image
+        ImageIcon icon = null;
+        if (imageFilename != null && !imageFilename.isEmpty()) {
+            java.net.URL imgURL = getClass().getResource("/assets/" + imageFilename);
+            if (imgURL != null) {
+                icon = new ImageIcon(
+                        new ImageIcon(imgURL).getImage()
+                                .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
+            }
+        }
+
+        tableModel.addRow(new Object[] {
+                icon,
+                productName,
+                qty,
+                String.format("₱%.2f", price),
+                String.format("₱%.2f", subtotal)
+        });
 
         // Also store in our internal list
         OrderDetail detail = new OrderDetail();

@@ -2,6 +2,7 @@ package src.main.java.com.puplagoon.pos.model.dto;
 
 public class Product {
     private int productId;
+    private String image;
     private String category;
     private String size;
     private String sugarLevel;
@@ -14,6 +15,14 @@ public class Product {
 
     public void setProductId(int productId) {
         this.productId = productId;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 
     public String getCategory() {
