@@ -14,10 +14,9 @@ public class OrderPanel extends JPanel {
 
     // We keep a separate list of OrderDetail, so we can return it to the controller
     // quickly
-    private final List<OrderDetail> detailList;
+    private final List<OrderDetail> orderDetails = new ArrayList<>();
 
     public OrderPanel() {
-        this.detailList = new ArrayList<>();
         this.tableModel = new DefaultTableModel(
                 new Object[] { "Image", "Product", "Quantity", "Price", "Subtotal" }, 0) {
             @Override
@@ -70,15 +69,15 @@ public class OrderPanel extends JPanel {
         detail.setQuantity(qty);
         detail.setUnitPrice(price);
         detail.setSubtotal(subtotal);
-        detailList.add(detail);
+        orderDetails.add(detail);
     }
 
     public List<OrderDetail> getAllOrderDetails() {
-        return new ArrayList<>(detailList);
+        return new ArrayList<>(orderDetails);
     }
 
     public void clearOrder() {
         tableModel.setRowCount(0);
-        detailList.clear();
+        orderDetails.clear();
     }
 }

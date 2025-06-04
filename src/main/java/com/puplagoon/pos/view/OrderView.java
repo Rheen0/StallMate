@@ -55,6 +55,11 @@ public class OrderView extends JPanel {
         add(bottom);
     }
 
+    // Show processing message
+    public void showProcessingMessage(String message) {
+        JOptionPane.showMessageDialog(this, message, "Processing", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     // Controller hooks
     public JButton getAddToOrderButton() {
         return addToOrderButton;
@@ -70,7 +75,11 @@ public class OrderView extends JPanel {
 
     // Table & field accessors
     public Product getSelectedProduct() {
-        return productPanel.getSelectedProduct();
+        Product selected = productPanel.getSelectedProduct();
+        if (selected == null) {
+            showErrorMessage("No product selected");
+        }
+        return selected;
     }
 
     public int getSelectedQuantity() {
@@ -87,6 +96,10 @@ public class OrderView extends JPanel {
 
     // OrderTable operations (OrderPanel)
     public void addOrderDetail(OrderDetail detail) {
+        if (detail.getProduct() == null) {
+            showErrorMessage("Cannot add item: Product is null");
+            return;
+        }
         orderPanel.addOrderItem(
                 detail.getProduct().getImage(),
                 detail.getProduct().getCategory() + " " + detail.getProduct().getSize(),

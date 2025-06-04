@@ -9,6 +9,9 @@ import src.main.java.com.puplagoon.pos.view.OrderView;
 
 import java.util.List;
 
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+
 public class OrderController {
     private final OrderView view;
     private final OrderService orderService;
@@ -51,22 +54,50 @@ public class OrderController {
 
     private void processCheckout() {
         List<OrderDetail> details = view.getOrderDetails();
-        if (details.isEmpty()) {
+        if (details == null || details.isEmpty()) {
             view.showErrorMessage("No items in order");
             return;
         }
+
+        // Validate all products exist
+        for (OrderDetail detail : details) {
+            if (detail.getProduct() == null) {
+                view.showErrorMessage("Order contains invalid items (missing product)");
+                return;
+            }
+        }
+
         Order order = new Order();
         order.setDetails(details);
         order.setTotalAmount(calculateTotal(details));
-        // Optionally set who created the order:
-        // order.setCreatedBy(currentUser.getUserId());
+        order.setCreatedBy(currentUser.getUserId());
 
-        if (orderService.processOrder(order)) {
-            view.showSuccessMessage("Order processed successfully");
-            view.clearOrder();
-        } else {
-            view.showErrorMessage("Failed to process order");
-        }
+        view.showProcessingMessage("Processing your order...");
+
+        new SwingWorker<Boolean, Void>() {
+            @Override
+            protected Boolean doInBackground() throws Exception {
+                return orderService.processOrder(order);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    if (get()) { // If processOrder returned true
+                        SwingUtilities.invokeLater(() -> {
+                            view.showSuccessMessage("Order #" + order.getOrderId() + " processed successfully!");
+                            view.clearOrder();
+                        });
+                    } else {
+                        SwingUtilities.invokeLater(() -> view.showErrorMessage("Failed to process order"));
+                    }
+                } catch (Exception e) {
+                    SwingUtilities
+                            .invokeLater(() -> view.showErrorMessage("Error processing order: " + e.getMessage()));
+                    e.printStackTrace();
+                }
+            }
+        }.execute();
     }
 
     private double calculateTotal(List<OrderDetail> details) {
