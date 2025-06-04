@@ -6,6 +6,7 @@ public class Order {
     private int orderId;
     private List<OrderDetail> details;
     private double totalAmount;
+    private int createdBy;
 
     // Getters and setters
     public int getOrderId() {
@@ -30,5 +31,13 @@ public class Order {
 
     public void setTotalAmount(double totalAmount) {
         this.totalAmount = totalAmount;
+    }
+
+    public int getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(int createdBy) {
+        this.createdBy = createdBy;
     }
 }

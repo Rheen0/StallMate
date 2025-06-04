@@ -15,9 +15,9 @@ public class OrderDAO {
     public boolean saveOrder(Order order) throws SQLException {
         connection.setAutoCommit(false);
         try {
-            // 1) Insert into Orders
             String orderQuery = "INSERT INTO Orders (customer_id, total_amount) VALUES (?, ?)";
             int orderId;
+
             try (PreparedStatement stmt = connection.prepareStatement(orderQuery, Statement.RETURN_GENERATED_KEYS)) {
                 stmt.setObject(1, null); // no customer for now
                 stmt.setDouble(2, order.getTotalAmount());
@@ -26,18 +26,19 @@ public class OrderDAO {
                 try (ResultSet rs = stmt.getGeneratedKeys()) {
                     if (rs.next()) {
                         orderId = rs.getInt(1);
+                        order.setOrderId(orderId); // Set the generated ID back to the Order object
                     } else {
                         throw new SQLException("Failed to get order ID");
                     }
                 }
             }
 
-            // 2) Insert order details in batch
             String detailQuery = """
                     INSERT INTO Order_Detail
                       (order_id, product_id, quantity, unit_price, subtotal)
                     VALUES (?, ?, ?, ?, ?)
                     """;
+
             try (PreparedStatement stmt = connection.prepareStatement(detailQuery)) {
                 for (OrderDetail detail : order.getDetails()) {
                     stmt.setInt(1, orderId);
