@@ -89,7 +89,7 @@ public class OrderPanel extends JPanel {
     detail.setQuantity(qty);
     detail.setUnitPrice(price);
     detail.setSubtotal(subtotal);
-    detailList.add(detail);
+    orderDetails.add(detail);
 }
 
     public List<OrderDetail> getAllOrderDetails() {
