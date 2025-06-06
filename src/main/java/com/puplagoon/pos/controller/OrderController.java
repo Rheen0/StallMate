@@ -1,3 +1,6 @@
+// Hello World Testing lang
+
+
 package src.main.java.com.puplagoon.pos.controller;
 
 import java.util.List;
@@ -63,10 +66,19 @@ public class OrderController {
 
     private void processCheckout() {
         List<OrderDetail> details = view.getOrderDetails();
-        if (details.isEmpty()) {
+        if (details == null || details.isEmpty()) {
             view.showErrorMessage("No items in order");
             return;
         }
+
+        // Validate all products exist
+        for (OrderDetail detail : details) {
+            if (detail.getProduct() == null) {
+                view.showErrorMessage("Order contains invalid items (missing product)");
+                return;
+            }
+        }
+
         Order order = new Order();
         order.setDetails(details);
         order.setTotalAmount(calculateTotal(details));

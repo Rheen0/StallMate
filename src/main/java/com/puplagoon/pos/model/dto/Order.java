@@ -45,4 +45,12 @@ public class Order {
     public void setTotalAmount(double totalAmount) {
         this.totalAmount = totalAmount;
     }
+
+    public int getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(int createdBy) {
+        this.createdBy = createdBy;
+    }
 }

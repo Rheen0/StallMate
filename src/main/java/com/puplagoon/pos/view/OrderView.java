@@ -54,6 +54,11 @@ public class OrderView extends JPanel {
         add(bottom);
     }
 
+    // Show processing message
+    public void showProcessingMessage(String message) {
+        JOptionPane.showMessageDialog(this, message, "Processing", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     // Controller hooks
     public JButton getAddToOrderButton() {
         return addToOrderButton;
@@ -69,7 +74,11 @@ public class OrderView extends JPanel {
 
     // Table & field accessors
     public Product getSelectedProduct() {
-        return productPanel.getSelectedProduct();
+        Product selected = productPanel.getSelectedProduct();
+        if (selected == null) {
+            showErrorMessage("No product selected");
+        }
+        return selected;
     }
 
     public int getSelectedQuantity() {
