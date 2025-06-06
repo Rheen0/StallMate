@@ -1,11 +1,8 @@
 package src.main.java.com.puplagoon.pos.service;
 
+import java.sql.SQLException;
 import src.main.java.com.puplagoon.pos.model.dao.UserDAO;
 import src.main.java.com.puplagoon.pos.model.dto.User;
-
-import java.sql.SQLException;
-import java.util.List;
-import java.util.ArrayList;
 
 public class UserService {
     private final UserDAO userDAO;

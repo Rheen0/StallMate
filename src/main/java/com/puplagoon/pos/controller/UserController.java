@@ -1,10 +1,7 @@
 package src.main.java.com.puplagoon.pos.controller;
 
-import src.main.java.com.puplagoon.pos.model.dto.User;
 import src.main.java.com.puplagoon.pos.service.UserService;
 import src.main.java.com.puplagoon.pos.view.UserManagementView;
-
-import java.util.List;
 
 public class UserController {
     private final UserManagementView view;
