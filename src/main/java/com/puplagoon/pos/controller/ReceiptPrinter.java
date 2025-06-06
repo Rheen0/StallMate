@@ -15,7 +15,6 @@ import javax.print.PrintServiceLookup;
 import javax.print.SimpleDoc;
 import src.main.java.com.puplagoon.pos.model.dto.Order;
 import src.main.java.com.puplagoon.pos.model.dto.OrderDetail;
-import src.main.java.com.puplagoon.pos.model.dto.Product;
 import src.main.java.com.puplagoon.pos.model.dto.User;
 
 public class ReceiptPrinter {
@@ -55,29 +54,33 @@ public class ReceiptPrinter {
             writer.write("Order ID: " + order.getOrderId() + "\n");
             writer.write("===================\n\n");
 
-            for (Product product : order.getDetails().stream().map(OrderDetail::getProduct).toList()) {
-                // Write product details
+            // Write table header
+        writer.write(String.format("%-15s %-10s %-10s %-10s\n", "Size", "Quantity", "Unit Price", "Subtotal"));
+        writer.write("--------------------------------------------------\n");
 
-                writer.write("Category: " + product.getCategory() + "\n");
-                writer.write("Size: " + product.getSize() + "\n");
-                writer.write("Sugar Level: " + product.getSugarLevel() + "\n");
-            }
-            // Write order details
-            for (OrderDetail detail : order.getDetails()) {
-                writer.write("Quantity: " + detail.getQuantity() + "\n");
-                writer.write("Unit Price: ₱" + String.format("%.2f", detail.getUnitPrice()) + "\n");
-                writer.write("Subtotal: ₱" + String.format("%.2f", detail.getSubtotal()) + "\n\n");
-            }
-            // Write employee handler
-            writer.write("Handled by: " + currentUser.getName() + "\n");
+        // Write product details in a tabular format
+        for (OrderDetail detail : order.getDetails()) {
+            writer.write(String.format(
+                "%-15s %-10d ₱%-9.2f ₱%-10.2f\n",
+                detail.getProduct().getSize(), // Size
+                detail.getQuantity(),          // Quantity
+                detail.getUnitPrice(),         // Unit Price
+                detail.getSubtotal()           // Subtotal
+            ));
+        }
 
-            // Write total amount
-            writer.write("===================\n");
-            writer.write("Total: ₱" + String.format("%.2f", order.getTotalAmount()) + "\n");
-            writer.write("===================\n");
+        // Write total items and total amount
+        writer.write("\n");
+        writer.write("Total Items: " + order.getDetails().stream().mapToInt(OrderDetail::getQuantity).sum() + "\n");
+        writer.write("===================\n");
+        writer.write("Total: ₱" + String.format("%.2f", order.getTotalAmount()) + "\n");
+        writer.write("===================\n");
 
-            // Confirm receipt generation
-            System.out.println("Receipt saved to: " + fileName);
+        // Write employee handler
+        writer.write("Handled by: " + currentUser.getName() + "\n");
+
+        // Confirm receipt generation
+        System.out.println("Receipt saved to: " + fileName);
             // Print the receipt
             printTextFile(fileName);
         } catch (IOException e) {

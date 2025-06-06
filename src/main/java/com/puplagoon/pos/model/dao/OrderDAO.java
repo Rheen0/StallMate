@@ -1,15 +1,27 @@
 package src.main.java.com.puplagoon.pos.model.dao;
 
+import java.sql.*;
 import src.main.java.com.puplagoon.pos.model.dto.Order;
 import src.main.java.com.puplagoon.pos.model.dto.OrderDetail;
-
-import java.sql.*;
 
 public class OrderDAO {
     private final Connection connection;
 
     public OrderDAO() {
         this.connection = DBConnection.getConnection();
+    }
+
+    public int getMostRecentOrderId() {
+        String query = "SELECT order_id FROM orders ORDER BY order_id DESC LIMIT 1";
+    try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            return rs.getInt("order_id");
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return -1; // Return -1 if no orders are found or an error occurs
     }
 
     public boolean saveOrder(Order order) throws SQLException {
@@ -49,6 +61,7 @@ public class OrderDAO {
                 }
                 stmt.executeBatch();
             }
+            
 
             connection.commit();
             return true;
