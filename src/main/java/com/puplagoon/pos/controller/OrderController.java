@@ -1,13 +1,12 @@
 package src.main.java.com.puplagoon.pos.controller;
 
+import java.util.List;
 import src.main.java.com.puplagoon.pos.model.dto.Order;
 import src.main.java.com.puplagoon.pos.model.dto.OrderDetail;
 import src.main.java.com.puplagoon.pos.model.dto.Product;
 import src.main.java.com.puplagoon.pos.model.dto.User;
 import src.main.java.com.puplagoon.pos.service.OrderService;
 import src.main.java.com.puplagoon.pos.view.OrderView;
-
-import java.util.List;
 
 public class OrderController {
     private final OrderView view;
@@ -60,10 +59,14 @@ public class OrderController {
         order.setTotalAmount(calculateTotal(details));
         // Optionally set who created the order:
         // order.setCreatedBy(currentUser.getUserId());
-
+    
         if (orderService.processOrder(order)) {
             view.showSuccessMessage("Order processed successfully");
             view.clearOrder();
+    
+            // Print the receipt
+            ReceiptPrinter printer = new ReceiptPrinter();
+            printer.printReceipt(order, currentUser);
         } else {
             view.showErrorMessage("Failed to process order");
         }
