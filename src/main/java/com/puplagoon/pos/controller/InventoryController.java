@@ -4,7 +4,9 @@ import src.main.java.com.puplagoon.pos.model.dto.Inventory;
 import src.main.java.com.puplagoon.pos.model.dto.User;
 import src.main.java.com.puplagoon.pos.service.InventoryService;
 import src.main.java.com.puplagoon.pos.view.InventoryView;
+import src.main.java.com.puplagoon.pos.model.dao.InventoryDAO;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class InventoryController {
@@ -15,7 +17,14 @@ public class InventoryController {
     public InventoryController(InventoryView view, User user) {
         this.view = view;
         this.currentUser = user;
-        this.inventoryService = new InventoryService(new src.main.java.com.puplagoon.pos.model.dao.InventoryDAO());
+        InventoryDAO inventoryDAO = new InventoryDAO();
+        this.inventoryService = new InventoryService(inventoryDAO);
+
+        try {
+            inventoryDAO.syncInventoryWithProducts();
+        } catch (SQLException e) {
+            e.printStackTrace(); // or log properly
+        }
         initController();
         loadInventoryItems();
     }
@@ -29,7 +38,6 @@ public class InventoryController {
         List<Inventory> items = inventoryService.getAllInventoryItems();
         view.populateInventoryTable(items);
     }
-
 
     // Pinalitan ko yung DTO class
     private void addStock() {

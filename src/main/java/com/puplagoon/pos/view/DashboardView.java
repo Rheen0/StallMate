@@ -1,3 +1,5 @@
+// Disregard
+
 package src.main.java.com.puplagoon.pos.view;
 
 public class DashboardView {

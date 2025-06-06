@@ -4,6 +4,8 @@ import src.main.java.com.puplagoon.pos.model.dto.Inventory;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,22 @@ public class InventoryPanel extends JPanel {
 
     private void initializeUI() {
         setLayout(new BorderLayout());
+        inventoryTable.setRowHeight(64); // adjust based on your icon size
+
+        // Add image renderer for column 1 (product image)
+        inventoryTable.getColumnModel().getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public void setValue(Object value) {
+                if (value instanceof ImageIcon) {
+                    setIcon((ImageIcon) value);
+                    setText(""); // hide text
+                } else {
+                    setIcon(null);
+                    super.setValue(value);
+                }
+            }
+        });
+
         add(new JScrollPane(inventoryTable), BorderLayout.CENTER);
     }
 
@@ -36,7 +54,9 @@ public class InventoryPanel extends JPanel {
 
     private static class InventoryTableModel extends AbstractTableModel {
         private List<Inventory> items = new ArrayList<>();
-        private final String[] columnNames = { "Inventory ID", "Product ID", "Quantity In Stock" };
+        private final String[] columnNames = {
+                "Inventory ID", "Product Image", "Category", "Size", "Sugar Level", "Price", "Quantity"
+        };
 
         public void setInventoryItems(List<Inventory> items) {
             this.items = items != null ? items : new ArrayList<>();
@@ -67,10 +87,15 @@ public class InventoryPanel extends JPanel {
             Inventory inv = items.get(row);
             return switch (col) {
                 case 0 -> inv.getId();
-                case 1 -> inv.getProductId();
-                case 2 -> inv.getQuantity();
+                case 1 -> inv.getProductImage();
+                case 2 -> inv.getProductCategory();
+                case 3 -> inv.getProductSize();
+                case 4 -> inv.getProductSugarLevel();
+                case 5 -> inv.getProductPrice();
+                case 6 -> inv.getQuantity();
                 default -> null;
             };
         }
+
     }
 }
