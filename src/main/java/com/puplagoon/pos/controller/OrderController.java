@@ -3,6 +3,7 @@
 
 package src.main.java.com.puplagoon.pos.controller;
 
+import java.util.List;
 import src.main.java.com.puplagoon.pos.model.dto.Order;
 import src.main.java.com.puplagoon.pos.model.dto.OrderDetail;
 import src.main.java.com.puplagoon.pos.model.dto.Product;
@@ -10,15 +11,11 @@ import src.main.java.com.puplagoon.pos.model.dto.User;
 import src.main.java.com.puplagoon.pos.service.OrderService;
 import src.main.java.com.puplagoon.pos.view.OrderView;
 
-import java.util.List;
-
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-
 public class OrderController {
     private final OrderView view;
     private final OrderService orderService;
     private final User currentUser; // in case we want to show “who sold this” or log the user
+    private final Order order = new Order(); // Initialize an Order object to manage the current order
 
     public OrderController(OrderView view, User user) {
         this.view = view;
@@ -52,7 +49,19 @@ public class OrderController {
 
             view.addOrderDetail(detail);
             view.updateOrderTotal(detail.getSubtotal());
-        }
+            // Add the item to the order and increment the counter
+            order.addItem(detail);
+
+            // Update the view (if necessary)
+            view.addOrderDetail(detail);
+
+            // Log the total items for debugging
+            System.out.println("Total items in order: " + order.getTotalItems());
+            } else {
+                view.showErrorMessage("Please select a valid product and quantity.");
+            }
+        
+        
     }
 
     private void processCheckout() {
@@ -73,34 +82,26 @@ public class OrderController {
         Order order = new Order();
         order.setDetails(details);
         order.setTotalAmount(calculateTotal(details));
-        order.setCreatedBy(currentUser.getUserId());
+        // Optionally set who created the order:
+        // order.setCreatedBy(currentUser.getUserId());
+        
+        if (orderService.processOrder(order)) {
+            view.showSuccessMessage("Order processed successfully");
+            view.clearOrder();
+            // Get the most recent order ID
+            int recentOrderId = orderService.getMostRecentOrderId();
+            System.out.println("Most recent order ID: " + recentOrderId);
 
-        view.showProcessingMessage("Processing your order...");
-
-        new SwingWorker<Boolean, Void>() {
-            @Override
-            protected Boolean doInBackground() throws Exception {
-                return orderService.processOrder(order);
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    if (get()) { // If processOrder returned true
-                        SwingUtilities.invokeLater(() -> {
-                            view.showSuccessMessage("Order #" + order.getOrderId() + " processed successfully!");
-                            view.clearOrder();
-                        });
-                    } else {
-                        SwingUtilities.invokeLater(() -> view.showErrorMessage("Failed to process order"));
-                    }
-                } catch (Exception e) {
-                    SwingUtilities
-                            .invokeLater(() -> view.showErrorMessage("Error processing order: " + e.getMessage()));
-                    e.printStackTrace();
-                }
-            }
-        }.execute();
+            // Pass the order ID to the receipt printer
+            order.setOrderId(recentOrderId); // Set the most recent order ID
+            
+            // Print the receipt
+            ReceiptPrinter printer = new ReceiptPrinter();
+            printer.printReceipt(order, currentUser);
+        } else {
+            view.showErrorMessage("Failed to process order");
+        }
+        
     }
 
     private double calculateTotal(List<OrderDetail> details) {

@@ -1,9 +1,9 @@
 package src.main.java.com.puplagoon.pos.model.dao;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Properties;
-import java.io.InputStream;
 
 public class DBConnection {
     private static Connection connection = null;
@@ -11,6 +11,7 @@ public class DBConnection {
     static {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
+            System.out.println("MySQL Driver loaded successfully");
         } catch (ClassNotFoundException e) {
             System.err.println("MySQL JDBC Driver not found!");
             e.printStackTrace();

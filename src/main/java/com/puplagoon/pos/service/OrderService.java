@@ -1,12 +1,11 @@
 package src.main.java.com.puplagoon.pos.service;
 
+import java.sql.SQLException;
+import java.util.List;
 import src.main.java.com.puplagoon.pos.model.dao.OrderDAO;
 import src.main.java.com.puplagoon.pos.model.dao.ProductDAO;
 import src.main.java.com.puplagoon.pos.model.dto.Order;
 import src.main.java.com.puplagoon.pos.model.dto.Product;
-
-import java.sql.SQLException;
-import java.util.List;
 
 public class OrderService {
     private final OrderDAO orderDAO;
@@ -24,6 +23,10 @@ public class OrderService {
             e.printStackTrace();
             return List.of();
         }
+    }
+    
+    public int getMostRecentOrderId() {
+        return orderDAO.getMostRecentOrderId();
     }
 
     public boolean processOrder(Order order) {

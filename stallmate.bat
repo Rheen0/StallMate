@@ -1,6 +1,6 @@
 @echo off
 REM Compile Java files
-javac -cp "lib\mysql-connector-j-9.2.0.jar" -d out ^
+javac -cp "lib\mysql-connector-j-9.3.0.jar" -d out ^
  src\main\java\com\puplagoon\pos\App.java ^
  src\main\java\com\puplagoon\pos\controller\*.java ^
  src\main\java\com\puplagoon\pos\service\*.java ^
@@ -30,7 +30,7 @@ if %errorlevel% neq 0 (
 echo Resources copied successfully.
 
 REM Run the application
-java -cp "out;lib\mysql-connector-j-9.2.0.jar;out\resources" src.main.java.com.puplagoon.pos.App
+java -cp "out;lib\mysql-connector-j-9.3.0.jar;out\resources" src.main.java.com.puplagoon.pos.App
 
 if %errorlevel% neq 0 (
     echo Application failed to run!
@@ -38,4 +38,9 @@ if %errorlevel% neq 0 (
     exit /b
 )
 
+REM Compile TxtToImage utility
+javac -cp "lib\mysql-connector-j-9.3.0.jar" -d out src\main\java\com\puplagoon\pos\controller\TxtToImage.java
+
+REM Run TxtToImage
+java -cp "out;lib\mysql-connector-j-9.3.0.jar" com.puplagoon.pos.controller.TxtToImage
 pause

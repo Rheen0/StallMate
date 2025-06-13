@@ -6,8 +6,21 @@ public class Order {
     private int orderId;
     private List<OrderDetail> details;
     private double totalAmount;
-    private int createdBy;
+    private int totalItems; // Counter for total items
 
+    public int getTotalItems() {
+        return totalItems;
+    }
+
+    public void setTotalItems(int totalItems) {
+        this.totalItems = totalItems;
+    }
+
+    // Method to add an item and increment the counter
+    public void addItem(OrderDetail detail) {
+        details.add(detail);
+        totalItems += detail.getQuantity(); // Increment by the quantity of the item
+    }
     // Getters and setters
     public int getOrderId() {
         return orderId;
@@ -33,11 +46,5 @@ public class Order {
         this.totalAmount = totalAmount;
     }
 
-    public int getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(int createdBy) {
-        this.createdBy = createdBy;
-    }
+  
 }

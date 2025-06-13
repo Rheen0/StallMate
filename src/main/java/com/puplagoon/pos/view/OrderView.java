@@ -1,12 +1,11 @@
 package src.main.java.com.puplagoon.pos.view;
 
+import java.util.List;
+import javax.swing.*;
 import src.main.java.com.puplagoon.pos.model.dto.OrderDetail;
 import src.main.java.com.puplagoon.pos.model.dto.Product;
 import src.main.java.com.puplagoon.pos.view.components.OrderPanel;
 import src.main.java.com.puplagoon.pos.view.components.ProductPanel;
-
-import javax.swing.*;
-import java.util.List;
 
 public class OrderView extends JPanel {
     private final ProductPanel productPanel;
@@ -96,16 +95,35 @@ public class OrderView extends JPanel {
 
     // OrderTable operations (OrderPanel)
     public void addOrderDetail(OrderDetail detail) {
-        if (detail.getProduct() == null) {
-            showErrorMessage("Cannot add item: Product is null");
-            return;
+        // Check if the product already exists in the order
+    List<OrderDetail> existingDetails = orderPanel.getAllOrderDetails();
+    for (OrderDetail existingDetail : existingDetails) {
+        if (existingDetail.getProduct().equals(detail.getProduct())) {
+            // Update the quantity and subtotal of the existing product
+            int newQuantity = existingDetail.getQuantity() + detail.getQuantity();
+            existingDetail.setQuantity(newQuantity);
+            existingDetail.setSubtotal(newQuantity * detail.getUnitPrice());
+            
+            // Update the order panel to reflect the changes
+            orderPanel.updateOrderItem(
+                existingDetail.getProduct().getImage(),
+                existingDetail.getProduct().getCategory() + " " + existingDetail.getProduct().getSize(),
+                newQuantity,
+                existingDetail.getUnitPrice(),
+                existingDetail.getSubtotal()
+            );
+            return; // Exit the method since the product was updated
         }
-        orderPanel.addOrderItem(
-                detail.getProduct().getImage(),
-                detail.getProduct().getCategory() + " " + detail.getProduct().getSize(),
-                detail.getQuantity(),
-                detail.getUnitPrice(),
-                detail.getSubtotal());
+    }
+
+    // If the product does not exist, add it as a new item
+    orderPanel.addOrderItem(
+        detail.getProduct(),
+        detail.getProduct().getCategory() + " " + detail.getProduct().getSize(),
+        detail.getQuantity(),
+        detail.getUnitPrice(),
+        detail.getSubtotal()
+    );
     }
 
     public List<OrderDetail> getOrderDetails() {

@@ -1,10 +1,9 @@
 package src.main.java.com.puplagoon.pos.service;
 
-import src.main.java.com.puplagoon.pos.model.dao.InventoryDAO;
-import src.main.java.com.puplagoon.pos.model.dto.Inventory;
-
 import java.sql.SQLException;
 import java.util.List;
+import src.main.java.com.puplagoon.pos.model.dao.InventoryDAO;
+import src.main.java.com.puplagoon.pos.model.dto.Inventory;
 
 public class InventoryService {
     private final InventoryDAO inventoryDAO;
