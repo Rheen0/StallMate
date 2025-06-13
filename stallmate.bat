@@ -38,4 +38,9 @@ if %errorlevel% neq 0 (
     exit /b
 )
 
+REM Compile TxtToImage utility
+javac -cp "lib\mysql-connector-j-9.3.0.jar" -d out src\main\java\com\puplagoon\pos\controller\TxtToImage.java
+
+REM Run TxtToImage
+java -cp "out;lib\mysql-connector-j-9.3.0.jar" com.puplagoon.pos.controller.TxtToImage
 pause

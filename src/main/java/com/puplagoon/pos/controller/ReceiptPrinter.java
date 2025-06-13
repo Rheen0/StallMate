@@ -6,6 +6,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.ArrayList;
 import javax.print.Doc;
 import javax.print.DocFlavor;
 import javax.print.DocPrintJob;
@@ -16,6 +18,7 @@ import javax.print.SimpleDoc;
 import src.main.java.com.puplagoon.pos.model.dto.Order;
 import src.main.java.com.puplagoon.pos.model.dto.OrderDetail;
 import src.main.java.com.puplagoon.pos.model.dto.User;
+import src.main.java.com.puplagoon.pos.controller.TxtToImage;
 
 public class ReceiptPrinter {
      public void printTextFile(String filePath) {
@@ -43,48 +46,58 @@ public class ReceiptPrinter {
             System.err.println("Failed to print file: " + e.getMessage());
         }
     }
-    public void printReceipt(Order order, User currentUser) {
-        // Define the file name for the receipt
-        String fileName = "receipt_" + System.currentTimeMillis() + ".txt";
+   public void printReceipt(Order order, User currentUser) {
+         List<String> receiptLines = new ArrayList<>();
 
-        try (FileWriter writer = new FileWriter(fileName)) {
-            // Write receipt header
-            writer.write("=== POS Receipt ===\n");
-            writer.write("Date: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "\n");
-            writer.write("Order ID: " + order.getOrderId() + "\n");
-            writer.write("===================\n\n");
+    // Build receipt in memory
+    String header = "=== POS Receipt ===";
+    receiptLines.add(header);
 
-            // Write table header
-        writer.write(String.format("%-15s %-10s %-10s %-10s\n", "Size", "Quantity", "Unit Price", "Subtotal"));
-        writer.write("--------------------------------------------------\n");
+    String dateLine = "Date: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    receiptLines.add(dateLine);
 
-        // Write product details in a tabular format
-        for (OrderDetail detail : order.getDetails()) {
-            writer.write(String.format(
-                "%-15s %-10d ₱%-9.2f ₱%-10.2f\n",
-                detail.getProduct().getSize(), // Size
-                detail.getQuantity(),          // Quantity
-                detail.getUnitPrice(),         // Unit Price
-                detail.getSubtotal()           // Subtotal
-            ));
-        }
+    String orderIdLine = "Order ID: " + order.getOrderId();
+    receiptLines.add(orderIdLine);
 
-        // Write total items and total amount
-        writer.write("\n");
-        writer.write("Total Items: " + order.getDetails().stream().mapToInt(OrderDetail::getQuantity).sum() + "\n");
-        writer.write("===================\n");
-        writer.write("Total: ₱" + String.format("%.2f", order.getTotalAmount()) + "\n");
-        writer.write("===================\n");
+    receiptLines.add("===================");
+    receiptLines.add("");
 
-        // Write employee handler
-        writer.write("Handled by: " + currentUser.getName() + "\n");
+    String tableHeader = String.format("%-12s %-12s %-10s %-10s %-10s", "Category", "Size", "Quantity", "Unit Price", "Subtotal");
+    receiptLines.add(tableHeader);
+    receiptLines.add("--------------------------------------------------------------------------");
 
-        // Confirm receipt generation
-        System.out.println("Receipt saved to: " + fileName);
-            // Print the receipt
-            printTextFile(fileName);
-        } catch (IOException e) {
-            System.err.println("Failed to save receipt: " + e.getMessage());
+    for (OrderDetail detail : order.getDetails()) {
+        String detailLine = String.format(
+            "%-12s %-12s %-10d ₱%-9.2f ₱%-10.2f",
+            detail.getProduct().getCategory(),
+            detail.getProduct().getSize(),
+            detail.getQuantity(),
+            detail.getUnitPrice(),
+            detail.getSubtotal()
+        );
+        receiptLines.add(detailLine);
+    }
+
+    receiptLines.add("");
+
+    String totalItemsLine = "Total Items: " + order.getDetails().stream().mapToInt(OrderDetail::getQuantity).sum();
+    receiptLines.add(totalItemsLine);
+     receiptLines.add("===================");
+
+    String totalLine = "Total: ₱" + String.format("%.2f", order.getTotalAmount());
+    receiptLines.add(totalLine);
+
+    receiptLines.add("===================");
+
+    String handlerLine = "Handled by: " + currentUser.getName();
+    receiptLines.add(handlerLine);
+
+    // Create the image from the receipt lines
+    try {
+        TxtToImage.createImage(receiptLines, "receipt.png");
+        System.out.println("Receipt image created!");
+    } catch (Exception e) {
+        e.printStackTrace();
         }
     }
 }
