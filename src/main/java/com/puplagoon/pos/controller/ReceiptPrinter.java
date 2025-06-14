@@ -66,13 +66,13 @@ public class ReceiptPrinter {
         receiptLines.add("===================");
         receiptLines.add("");
     
-        String tableHeader = String.format("%-12s %-12s %-10s %-10s %-10s", "Category", "Size", "Quantity", "Unit Price", "Subtotal");
+        String tableHeader = String.format("%-25s %-15s %-15s %-15s %-15s", "Category", "Size", "Quantity", "Unit Price", "Subtotal");
         receiptLines.add(tableHeader);
-        receiptLines.add("--------------------------------------------------------------------------");
+        receiptLines.add("----------------------------------------------------------------------------------------------------");
     
         for (OrderDetail detail : order.getDetails()) {
             String detailLine = String.format(
-                "%-12s %-12s %-10d ₱%-9.2f ₱%-10.2f",
+                "%-25s %-15s %-15s %-15s %-15s",
                 detail.getProduct().getCategory(),
                 detail.getProduct().getSize(),
                 detail.getQuantity(),

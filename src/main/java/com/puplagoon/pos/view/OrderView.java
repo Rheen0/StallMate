@@ -95,35 +95,32 @@ public class OrderView extends JPanel {
 
     // OrderTable operations (OrderPanel)
     public void addOrderDetail(OrderDetail detail) {
-        // Check if the product already exists in the order
-    List<OrderDetail> existingDetails = orderPanel.getAllOrderDetails();
-    for (OrderDetail existingDetail : existingDetails) {
-        if (existingDetail.getProduct().equals(detail.getProduct())) {
-            // Update the quantity and subtotal of the existing product
-            int newQuantity = existingDetail.getQuantity() + detail.getQuantity();
-            existingDetail.setQuantity(newQuantity);
-            existingDetail.setSubtotal(newQuantity * detail.getUnitPrice());
-            
-            // Update the order panel to reflect the changes
-            orderPanel.updateOrderItem(
-                existingDetail.getProduct().getImage(),
-                existingDetail.getProduct().getCategory() + " " + existingDetail.getProduct().getSize(),
-                newQuantity,
-                existingDetail.getUnitPrice(),
-                existingDetail.getSubtotal()
-            );
-            return; // Exit the method since the product was updated
+        List<OrderDetail> existingDetails = orderPanel.getAllOrderDetails();
+        for (OrderDetail existingDetail : existingDetails) {
+            if (existingDetail.getProduct().equals(detail.getProduct())) {
+                // Update the quantity and subtotal of the existing product
+                int newQuantity = existingDetail.getQuantity() + detail.getQuantity();
+                existingDetail.setQuantity(newQuantity);
+                existingDetail.setSubtotal(newQuantity * detail.getUnitPrice());
+    
+                // Update the order panel to reflect the changes
+                orderPanel.updateOrderItem(
+                    existingDetail.getProduct().getCategory(),
+                    newQuantity,
+                    existingDetail.getUnitPrice(),
+                    existingDetail.getSubtotal()
+                );
+                return; // Exit the method since the product was updated
+            }
         }
-    }
-
-    // If the product does not exist, add it as a new item
-    orderPanel.addOrderItem(
-        detail.getProduct(),
-        detail.getProduct().getCategory() + " " + detail.getProduct().getSize(),
-        detail.getQuantity(),
-        detail.getUnitPrice(),
-        detail.getSubtotal()
-    );
+    
+        // If the product does not exist, add it as a new item
+        orderPanel.addOrderItem(
+            detail.getProduct(),
+            detail.getQuantity(),
+            detail.getUnitPrice(),
+            detail.getSubtotal()
+        );
     }
 
     public List<OrderDetail> getOrderDetails() {
