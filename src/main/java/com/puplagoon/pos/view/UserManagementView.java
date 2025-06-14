@@ -4,6 +4,8 @@ import src.main.java.com.puplagoon.pos.model.dto.User;
 import src.main.java.com.puplagoon.pos.view.components.UserPanel;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionListener;
+
 import java.util.List;
 
 public class UserManagementView extends JPanel {
@@ -93,5 +95,49 @@ public class UserManagementView extends JPanel {
 
     public void showErrorMessage(String msg) {
         JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public void setNameField(String name) {
+        nameField.setText(name);
+    }
+
+    public void setUsernameField(String username) {
+        usernameField.setText(username);
+    }
+
+    public void setPasswordField(String password) {
+        passwordField.setText(password);
+    }
+
+    public void setRoleComboBox(String role) {
+        roleComboBox.setSelectedItem(role);
+    }
+
+    // Clear all form fields
+    public void clearFormFields() {
+        setNameField("");
+        setUsernameField("");
+        setPasswordField("");
+        setRoleComboBox("employee"); // default role
+    }
+
+    // Add table selection listener
+    public void addUserSelectionListener(ListSelectionListener listener) {
+        userPanel.getUserTable().getSelectionModel().addListSelectionListener(listener);
+    }
+
+    // Get the JTable for additional configuration if needed
+    public JTable getUserTable() {
+        return userPanel.getUserTable();
+    }
+
+    public javax.swing.JTextField getUsernameField() {
+        return usernameField;
+    }
+
+    // Refresh the user table
+    public void refreshUserTable(List<User> users) {
+        userPanel.setUsers(users);
+        userPanel.getUserTable().repaint();
     }
 }

@@ -1,6 +1,8 @@
 package src.main.java.com.puplagoon.pos.service;
 
 import java.sql.SQLException;
+import java.util.List;
+
 import src.main.java.com.puplagoon.pos.model.dao.UserDAO;
 import src.main.java.com.puplagoon.pos.model.dto.User;
 
@@ -11,15 +13,14 @@ public class UserService {
         this.userDAO = userDAO;
     }
 
-    // public List<User> getAllUsers() {
-    //     // Suppose you add a findAll() method in UserDAO, or implement below
-    //     try {
-    //         return userDAO.findAllUsers();
-    //     } catch (SQLException e) {
-    //         e.printStackTrace();
-    //         return List.of();
-    //     }
-    // }
+    public List<User> getAllUsers() {
+        try {
+            return userDAO.findAllUsers();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return List.of();
+        }
+    }
 
     public boolean createUser(User user) {
         try {
@@ -45,6 +46,15 @@ public class UserService {
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public boolean isUsernameTaken(String username) {
+        try {
+            return userDAO.usernameExists(username);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return true; // Assume username is taken if there's an error
         }
     }
 }

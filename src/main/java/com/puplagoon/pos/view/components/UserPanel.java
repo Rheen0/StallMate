@@ -23,6 +23,10 @@ public class UserPanel extends JPanel {
         add(new JScrollPane(userTable), BorderLayout.CENTER);
     }
 
+    public JTable getUserTable() {
+        return userTable;
+    }
+
     public void setUsers(List<User> users) {
         tableModel.setUsers(users);
     }

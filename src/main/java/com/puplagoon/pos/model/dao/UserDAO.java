@@ -2,6 +2,8 @@ package src.main.java.com.puplagoon.pos.model.dao;
 
 import src.main.java.com.puplagoon.pos.model.dto.User;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserDAO {
     private final Connection connection;
@@ -10,18 +12,18 @@ public class UserDAO {
         this.connection = DBConnection.getConnection();
     }
 
-    // public User findAllUsers() throws SQLException {
-    // String query = "SELECT * FROM Users";
-    // try (Statement stmt = connection.createStatement();
-    // ResultSet rs = stmt.executeQuery(query)) {
-    // if (rs.next()) {
-    // return mapResultSetToUser(rs);
-    // }
-    // }
-    // return null; // or throw an exception if no users found
-    // }
+    public List<User> findAllUsers() throws SQLException {
+        List<User> users = new ArrayList<>();
+        String query = "SELECT * FROM Users";
+        try (PreparedStatement stmt = connection.prepareStatement(query);
+                ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                users.add(mapResultSetToUser(rs));
+            }
+        }
+        return users;
+    }
 
-    // These are AI Generated
     public boolean insertUser(User user) throws SQLException {
         String query = "INSERT INTO Users (name, user_name, password, role) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -31,6 +33,19 @@ public class UserDAO {
             stmt.setString(4, user.getRole());
             return stmt.executeUpdate() > 0;
         }
+    }
+
+    public boolean usernameExists(String username) throws SQLException {
+        String query = "SELECT COUNT(*) FROM Users WHERE user_name = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, username);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
     }
 
     public boolean updateUser(User user) throws SQLException {

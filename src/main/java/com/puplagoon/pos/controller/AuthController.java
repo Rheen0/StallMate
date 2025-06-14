@@ -10,6 +10,8 @@ import src.main.java.com.puplagoon.pos.view.InventoryView;
 import src.main.java.com.puplagoon.pos.view.UserManagementView;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 public class AuthController {
     private final LoginView view;
@@ -38,18 +40,34 @@ public class AuthController {
             SwingUtilities.invokeLater(() -> {
                 MainFrame mainFrame = new MainFrame(user);
 
-                // 1) Wire up Order tab
+                // Wire up Order tab
                 OrderView orderView = mainFrame.getOrderView();
-                new OrderController(orderView, user); // pass user in case we need name/role
+                new OrderController(orderView, user);
 
-                // 2) Wire up Inventory tab
+                // Wire up Inventory tab
                 InventoryView inventoryView = mainFrame.getInventoryView();
                 new InventoryController(inventoryView, user);
 
-                // 3) If admin, wire up User Management tab
+                // If admin, wire up User Management tab
                 if ("admin".equalsIgnoreCase(user.getRole())) {
                     UserManagementView userMgmtView = mainFrame.getUserManagementView();
                     new UserController(userMgmtView);
+
+                    // Add selection listener
+                    userMgmtView.addUserSelectionListener(new ListSelectionListener() {
+                        @Override
+                        public void valueChanged(ListSelectionEvent e) {
+                            if (!e.getValueIsAdjusting()) {
+                                User selected = userMgmtView.getSelectedUser();
+                                if (selected != null) {
+                                    userMgmtView.setNameField(selected.getName());
+                                    userMgmtView.setUsernameField(selected.getUsername());
+                                    userMgmtView.setPasswordField(selected.getPassword());
+                                    userMgmtView.setRoleComboBox(selected.getRole());
+                                }
+                            }
+                        }
+                    });
                 }
 
                 mainFrame.setVisible(true);
