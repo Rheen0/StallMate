@@ -17,37 +17,31 @@ public class OrderView extends JPanel {
     private final JButton cancelOrderButton;
     private final JLabel totalLabel;
 
-    public OrderView() {
-        this.productPanel = new ProductPanel();
+    public OrderView(ProductPanel productPanel) {
+        this.productPanel = productPanel;
         this.orderPanel = new OrderPanel();
         this.quantityField = new JTextField(5);
         this.addToOrderButton = new JButton("Add to Order");
         this.checkoutButton = new JButton("Checkout");
         this.cancelOrderButton = new JButton("Cancel Order");
         this.totalLabel = new JLabel("Total: ₱0.00");
-
         initializeUI();
     }
 
     private void initializeUI() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
-        // Top half: Product list
         add(new JLabel("Select Product to Add:"));
         add(new JScrollPane(productPanel));
 
-        // Quantity + Add
         JPanel qtyPanel = new JPanel();
         qtyPanel.add(new JLabel("Quantity:"));
         qtyPanel.add(quantityField);
         qtyPanel.add(addToOrderButton);
         add(qtyPanel);
 
-        // Middle: Current Order (OrderPanel)
         add(new JLabel("Current Order:"));
         add(new JScrollPane(orderPanel));
 
-        // Bottom: Total, Checkout, Cancel
         JPanel bottom = new JPanel();
         bottom.add(totalLabel);
         bottom.add(checkoutButton);
@@ -55,12 +49,51 @@ public class OrderView extends JPanel {
         add(bottom);
     }
 
-    // Show processing message
-    public void showProcessingMessage(String message) {
-        JOptionPane.showMessageDialog(this, message, "Processing", JOptionPane.INFORMATION_MESSAGE);
+    public void refreshProducts(List<Product> products) {
+        productPanel.setProducts(products);
     }
 
-    // Controller hooks
+    public Product getSelectedProduct() {
+        return productPanel.getSelectedProduct();
+    }
+
+    public int getSelectedQuantity() {
+        try {
+            return Integer.parseInt(quantityField.getText().trim());
+        } catch (NumberFormatException ex) {
+            return 0;
+        }
+    }
+
+    public void addOrderDetail(OrderDetail detail) {
+        if (detail.getProduct() == null) {
+            showMessage("Cannot add item: Product is null", true);
+            return;
+        }
+        orderPanel.addOrderItem(detail);
+        updateOrderTotal(detail.getSubtotal());
+    }
+
+    public List<OrderDetail> getOrderDetails() {
+        return orderPanel.getAllOrderDetails();
+    }
+
+    public void updateOrderTotal(double subtotalToAdd) {
+        String current = totalLabel.getText().replace("Total: ₱", "").trim();
+        double oldTotal = 0.0;
+        try {
+            oldTotal = Double.parseDouble(current);
+        } catch (NumberFormatException ign) {
+        }
+        totalLabel.setText(String.format("Total: ₱%.2f", oldTotal + subtotalToAdd));
+    }
+
+    public void clearOrder() {
+        orderPanel.clearOrder();
+        totalLabel.setText("Total: ₱0.00");
+        quantityField.setText("");
+    }
+
     public JButton getAddToOrderButton() {
         return addToOrderButton;
     }
@@ -73,69 +106,12 @@ public class OrderView extends JPanel {
         return cancelOrderButton;
     }
 
-    // Table & field accessors
-    public Product getSelectedProduct() {
-        Product selected = productPanel.getSelectedProduct();
-        if (selected == null) {
-            showErrorMessage("No product selected");
-        }
-        return selected;
+    public void showMessage(String message, boolean isError) {
+        JOptionPane.showMessageDialog(this, message, isError ? "Error" : "Success",
+                isError ? JOptionPane.ERROR_MESSAGE : JOptionPane.INFORMATION_MESSAGE);
     }
 
-    public int getSelectedQuantity() {
-        try {
-            return Integer.parseInt(quantityField.getText().trim());
-        } catch (NumberFormatException ex) {
-            return 0;
-        }
-    }
-
-    public void populateProductTable(List<Product> products) {
-        productPanel.setProducts(products);
-    }
-
-    // OrderTable operations (OrderPanel)
-    public void addOrderDetail(OrderDetail detail) {
-        if (detail.getProduct() == null) {
-            showErrorMessage("Cannot add item: Product is null");
-            return;
-        }
-        orderPanel.addOrderItem(
-                detail.getProduct().getImage(),
-                detail.getProduct().getCategory() + " " + detail.getProduct().getSize(),
-                detail.getQuantity(),
-                detail.getUnitPrice(),
-                detail.getSubtotal());
-    }
-
-    public List<OrderDetail> getOrderDetails() {
-        // You’ll need to modify OrderPanel to store and return a List<OrderDetail>.
-        return orderPanel.getAllOrderDetails();
-    }
-
-    public void updateOrderTotal(double subtotalToAdd) {
-        // parse the current total from label, then add subtotalToAdd
-        String current = totalLabel.getText().replace("Total: ₱", "").trim();
-        double oldTotal = 0.0;
-        try {
-            oldTotal = Double.parseDouble(current);
-        } catch (NumberFormatException ign) {
-        }
-        double newTotal = oldTotal + subtotalToAdd;
-        totalLabel.setText(String.format("Total: ₱%.2f", newTotal));
-    }
-
-    public void clearOrder() {
-        orderPanel.clearOrder();
-        totalLabel.setText("Total: ₱0.00");
-        quantityField.setText("");
-    }
-
-    public void showSuccessMessage(String message) {
-        JOptionPane.showMessageDialog(this, message, "Success", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    public void showErrorMessage(String message) {
-        JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+    public void showProcessingMessage(String message) {
+        JOptionPane.showMessageDialog(this, message, "Processing", JOptionPane.INFORMATION_MESSAGE);
     }
 }

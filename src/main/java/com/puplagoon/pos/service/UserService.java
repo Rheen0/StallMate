@@ -14,15 +14,15 @@ public class UserService {
         this.userDAO = userDAO;
     }
 
-    // public List<User> getAllUsers() {
-    //     // Suppose you add a findAll() method in UserDAO, or implement below
-    //     try {
-    //         return userDAO.findAllUsers();
-    //     } catch (SQLException e) {
-    //         e.printStackTrace();
-    //         return List.of();
-    //     }
-    // }
+    public List<User> getAllUsers() {
+        // Suppose you add a findAll() method in UserDAO, or implement below
+        try {
+            return userDAO.findAllUsers();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return List.of();
+        }
+    }
 
     public boolean createUser(User user) {
         try {

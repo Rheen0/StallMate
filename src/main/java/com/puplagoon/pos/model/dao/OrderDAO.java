@@ -15,29 +15,30 @@ public class OrderDAO {
     public boolean saveOrder(Order order) throws SQLException {
         connection.setAutoCommit(false);
         try {
-            String orderQuery = "INSERT INTO Orders (customer_id, total_amount) VALUES (?, ?)";
+            // Modified query to match your actual orders table structure
+            String orderQuery = "INSERT INTO orders (product_id, quantity_in_stock) VALUES (?, ?)";
             int orderId;
 
             try (PreparedStatement stmt = connection.prepareStatement(orderQuery, Statement.RETURN_GENERATED_KEYS)) {
-                stmt.setObject(1, null); // no customer for now
-                stmt.setDouble(2, order.getTotalAmount());
+                // Since your orders table only has product_id and quantity_in_stock,
+                // we'll use the first product in the order for these values
+                // This is problematic - see note below
+                OrderDetail firstDetail = order.getDetails().get(0);
+                stmt.setInt(1, firstDetail.getProduct().getProductId());
+                stmt.setInt(2, firstDetail.getQuantity());
                 stmt.executeUpdate();
 
                 try (ResultSet rs = stmt.getGeneratedKeys()) {
                     if (rs.next()) {
                         orderId = rs.getInt(1);
-                        order.setOrderId(orderId); // Set the generated ID back to the Order object
+                        order.setOrderId(orderId);
                     } else {
                         throw new SQLException("Failed to get order ID");
                     }
                 }
             }
 
-            String detailQuery = """
-                    INSERT INTO Order_Detail
-                      (order_id, product_id, quantity, unit_price, subtotal)
-                    VALUES (?, ?, ?, ?, ?)
-                    """;
+            String detailQuery = "INSERT INTO order_detail (order_id, product_id, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?)";
 
             try (PreparedStatement stmt = connection.prepareStatement(detailQuery)) {
                 for (OrderDetail detail : order.getDetails()) {

@@ -14,77 +14,80 @@ public class InventoryDAO {
         this.connection = DBConnection.getConnection();
     }
 
-    public List<Inventory> findAll() throws SQLException {
-        List<Inventory> inventory = new ArrayList<>();
-        String query = """
-                    SELECT
-                        i.inventory_id,
-                        i.product_id,
-                        i.quantity_in_stock,
-                        p.category,
-                        p.size,
-                        p.sugar_level,
-                        p.price,
-                        p.image
-                    FROM Inventory i
-                    JOIN Product p ON i.product_id = p.product_id
-                """;
-
-        try (PreparedStatement stmt = connection.prepareStatement(query);
-                ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                inventory.add(mapResultSetToInventory(rs));
+    // Get current stock for a specific product
+    public int getStockForProduct(int productId) throws SQLException {
+        String query = "SELECT quantity_in_stock FROM inventory WHERE product_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, productId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getInt("quantity_in_stock") : 0;
             }
         }
-
-        return inventory;
     }
 
-    public boolean updateStock(int productId, int quantity) throws SQLException {
-        String query = "UPDATE Inventory SET quantity_in_stock = ? WHERE product_id = ?";
+    // Get all inventory items with product details (for card display)
+    public List<Inventory> findAll() throws SQLException {
+        List<Inventory> items = new ArrayList<>();
+        String query = """
+                SELECT i.inventory_id, i.product_id, i.quantity_in_stock,
+                       p.category, p.price, p.image
+                FROM inventory i
+                JOIN product p ON i.product_id = p.product_id
+                """;
+
+        try (Statement stmt = connection.createStatement();
+                ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                items.add(mapResultSetToInventory(rs));
+            }
+        }
+        return items;
+    }
+
+    // Update stock quantity (admin only)
+    public boolean updateStock(int productId, int newQuantity) throws SQLException {
+        String query = "UPDATE inventory SET quantity_in_stock = ? WHERE product_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, quantity);
+            stmt.setInt(1, newQuantity);
             stmt.setInt(2, productId);
             return stmt.executeUpdate() > 0;
         }
     }
 
-    // Pinalitan ko yung DTO class to match inventory
+    // Helper method to map database row to Inventory object
     private Inventory mapResultSetToInventory(ResultSet rs) throws SQLException {
         Inventory item = new Inventory();
         item.setId(rs.getInt("inventory_id"));
         item.setProductId(rs.getInt("product_id"));
         item.setQuantity(rs.getInt("quantity_in_stock"));
 
+        // Product details for the card UI
         item.setProductCategory(rs.getString("category"));
-        item.setProductSize(rs.getString("size"));
-        item.setProductSugarLevel(rs.getString("sugar_level"));
         item.setProductPrice(rs.getDouble("price"));
 
-        String imagePath = rs.getString("image"); // example: "coffee.png"
+        // Load product image
+        String imagePath = rs.getString("image");
         if (imagePath != null && !imagePath.isBlank()) {
             java.net.URL imgURL = getClass().getResource("/assets/" + imagePath);
             if (imgURL != null) {
                 item.setProductImage(new ImageIcon(imgURL));
-            } else {
-                item.setProductImage(null); // or handle missing image as needed
             }
         }
+
         return item;
     }
 
-    // Syncing inventory with products
-    public void syncInventoryWithProducts() throws SQLException {
-        String sql = """
-                    INSERT INTO Inventory (product_id, quantity_in_stock)
-                    SELECT p.product_id, 0
-                    FROM Product p
-                    LEFT JOIN Inventory i ON p.product_id = i.product_id
-                    WHERE i.product_id IS NULL
+    // Optional: Auto-create inventory entries for new products
+    public void syncInventory() throws SQLException {
+        String query = """
+                INSERT INTO inventory (product_id, quantity_in_stock)
+                SELECT p.product_id, 0
+                FROM product p
+                LEFT JOIN inventory i ON p.product_id = i.product_id
+                WHERE i.product_id IS NULL
                 """;
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.executeUpdate();
+        try (Statement stmt = connection.createStatement()) {
+            stmt.executeUpdate(query);
         }
     }
-
 }

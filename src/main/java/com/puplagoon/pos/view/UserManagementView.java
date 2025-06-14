@@ -11,7 +11,6 @@ public class UserManagementView extends JPanel {
     private final JButton createUserButton;
     private final JButton updateUserButton;
     private final JButton deleteUserButton;
-    // Fields for new/edit user:
     private final JTextField nameField;
     private final JTextField usernameField;
     private final JPasswordField passwordField;
@@ -26,7 +25,6 @@ public class UserManagementView extends JPanel {
         this.usernameField = new JTextField(10);
         this.passwordField = new JPasswordField(10);
         this.roleComboBox = new JComboBox<>(new String[] { "admin", "employee" });
-
         initializeUI();
     }
 
@@ -44,7 +42,6 @@ public class UserManagementView extends JPanel {
         form.add(passwordField);
         form.add(new JLabel("Role:"));
         form.add(roleComboBox);
-
         add(form);
 
         JPanel buttons = new JPanel();
@@ -54,11 +51,7 @@ public class UserManagementView extends JPanel {
         add(buttons);
     }
 
-    public List<User> getAllUsers() {
-        return userPanel.getUsers();
-    }
-
-    public void populateUserTable(List<User> users) {
+    public void refreshUsers(List<User> users) {
         userPanel.setUsers(users);
     }
 
@@ -87,11 +80,8 @@ public class UserManagementView extends JPanel {
         return deleteUserButton;
     }
 
-    public void showSuccessMessage(String msg) {
-        JOptionPane.showMessageDialog(this, msg, "Success", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    public void showErrorMessage(String msg) {
-        JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
+    public void showMessage(String msg, boolean isError) {
+        JOptionPane.showMessageDialog(this, msg, isError ? "Error" : "Success",
+                isError ? JOptionPane.ERROR_MESSAGE : JOptionPane.INFORMATION_MESSAGE);
     }
 }

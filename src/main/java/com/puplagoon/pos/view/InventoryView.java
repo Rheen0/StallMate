@@ -2,47 +2,50 @@ package src.main.java.com.puplagoon.pos.view;
 
 import src.main.java.com.puplagoon.pos.model.dto.Inventory;
 import src.main.java.com.puplagoon.pos.view.components.InventoryPanel;
+import src.main.java.com.puplagoon.pos.model.dto.User;
 
 import javax.swing.*;
 import java.util.List;
 
 public class InventoryView extends JPanel {
     private final InventoryPanel inventoryPanel;
-    private final JTextField addQtyField;
-    private final JButton addStockButton;
-    private final JTextField updateQtyField;
-    private final JButton updateStockButton;
+    private final User user;
+    private JTextField addQtyField;
+    private JButton addStockButton;
+    private JTextField updateQtyField;
+    private JButton updateStockButton;
 
-    public InventoryView() {
+    public InventoryView(User user) {
+        this.user = user;
         this.inventoryPanel = new InventoryPanel();
-        this.addQtyField = new JTextField(5);
-        this.addStockButton = new JButton("Add Stock");
-        this.updateQtyField = new JTextField(5);
-        this.updateStockButton = new JButton("Update Stock");
         initializeUI();
     }
 
     private void initializeUI() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
         add(new JLabel("Inventory Items"));
         add(new JScrollPane(inventoryPanel));
 
-        JPanel addPanel = new JPanel();
-        addPanel.add(new JLabel("Add Qty:"));
-        addPanel.add(addQtyField);
-        addPanel.add(addStockButton);
+        if ("admin".equalsIgnoreCase(user.getRole())) {
+            JPanel addPanel = new JPanel();
+            addQtyField = new JTextField(5);
+            addStockButton = new JButton("Add Stock");
+            addPanel.add(new JLabel("Add Qty:"));
+            addPanel.add(addQtyField);
+            addPanel.add(addStockButton);
+            add(addPanel);
 
-        JPanel updatePanel = new JPanel();
-        updatePanel.add(new JLabel("Set New Qty:"));
-        updatePanel.add(updateQtyField);
-        updatePanel.add(updateStockButton);
-
-        add(addPanel);
-        add(updatePanel);
+            JPanel updatePanel = new JPanel();
+            updateQtyField = new JTextField(5);
+            updateStockButton = new JButton("Update Stock");
+            updatePanel.add(new JLabel("Set New Qty:"));
+            updatePanel.add(updateQtyField);
+            updatePanel.add(updateStockButton);
+            add(updatePanel);
+        }
     }
 
-    public void populateInventoryTable(List<Inventory> items) {
+    public void refreshInventory(List<Inventory> items) {
         inventoryPanel.setInventoryItems(items);
     }
 
@@ -74,11 +77,8 @@ public class InventoryView extends JPanel {
         return updateStockButton;
     }
 
-    public void showSuccessMessage(String msg) {
-        JOptionPane.showMessageDialog(this, msg, "Success", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    public void showErrorMessage(String msg) {
-        JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
+    public void showMessage(String msg, boolean isError) {
+        JOptionPane.showMessageDialog(this, msg, isError ? "Error" : "Success", 
+            isError ? JOptionPane.ERROR_MESSAGE : JOptionPane.INFORMATION_MESSAGE);
     }
 }

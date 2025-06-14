@@ -12,58 +12,75 @@ import java.util.List;
 public class InventoryController {
     private final InventoryView view;
     private final InventoryService inventoryService;
-    private final User currentUser; // optional, in case we log who restocked
+    private final User currentUser;
 
     public InventoryController(InventoryView view, User user) {
         this.view = view;
         this.currentUser = user;
-        InventoryDAO inventoryDAO = new InventoryDAO();
-        this.inventoryService = new InventoryService(inventoryDAO);
+        this.inventoryService = new InventoryService(new InventoryDAO());
+        initialize();
+    }
 
-        try {
-            inventoryDAO.syncInventoryWithProducts();
-        } catch (SQLException e) {
-            e.printStackTrace(); // or log properly
+    private void initialize() {
+        loadInventory();
+        if ("admin".equalsIgnoreCase(currentUser.getRole())) {
+            view.getAddStockButton().addActionListener(e -> addStock());
+            view.getUpdateStockButton().addActionListener(e -> updateStock());
         }
-        initController();
-        loadInventoryItems();
     }
 
-    private void initController() {
-        view.getAddStockButton().addActionListener(e -> addStock());
-        view.getUpdateStockButton().addActionListener(e -> updateStock());
-    }
-
-    private void loadInventoryItems() {
+    private void loadInventory() {
         List<Inventory> items = inventoryService.getAllInventoryItems();
-        view.populateInventoryTable(items);
+        view.refreshInventory(items);
     }
 
-    // Pinalitan ko yung DTO class
     private void addStock() {
         Inventory item = view.getSelectedInventoryItem();
         int addQty = view.getAddQuantity();
-        if (item != null && addQty > 0) {
-            int newQty = item.getQuantity() + addQty;
-            if (inventoryService.updateStock(item.getId(), newQty)) {
-                view.showSuccessMessage("Stock added successfully");
-                loadInventoryItems();
-            } else {
-                view.showErrorMessage("Failed to add stock");
+
+        if (item == null) {
+            view.showMessage("Please select an item first", true);
+            return;
+        }
+
+        if (addQty <= 0) {
+            view.showMessage("Please enter a valid quantity", true);
+            return;
+        }
+
+        try {
+            if (inventoryService.updateStock(item.getProductId(), item.getQuantity() + addQty, currentUser)) {
+                view.showMessage("Stock added successfully", false);
+                loadInventory();
             }
+        } catch (SQLException e) {
+            view.showMessage("Database error: " + e.getMessage(), true);
         }
     }
 
     private void updateStock() {
         Inventory item = view.getSelectedInventoryItem();
         int newQty = view.getUpdateQuantity();
-        if (item != null && newQty >= 0) {
-            if (inventoryService.updateStock(item.getId(), newQty)) {
-                view.showSuccessMessage("Stock updated successfully");
-                loadInventoryItems();
+
+        if (item == null) {
+            view.showMessage("Please select an item first", true);
+            return;
+        }
+
+        if (newQty < 0) {
+            view.showMessage("Please enter a valid quantity", true);
+            return;
+        }
+
+        try {
+            if (inventoryService.updateStock(item.getId(), newQty, currentUser)) {
+                view.showMessage("Stock updated successfully", false);
+                loadInventory();
             } else {
-                view.showErrorMessage("Failed to update stock");
+                view.showMessage("Failed to update stock", true);
             }
+        } catch (SQLException e) {
+            view.showMessage("Database error: " + e.getMessage(), true);
         }
     }
 }

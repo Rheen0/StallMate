@@ -3,99 +3,65 @@ package src.main.java.com.puplagoon.pos.view.components;
 import src.main.java.com.puplagoon.pos.model.dto.Inventory;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
 
 import java.awt.*;
-import java.util.ArrayList;
+
 import java.util.List;
 
 public class InventoryPanel extends JPanel {
-    private final JTable inventoryTable;
-    private final InventoryTableModel tableModel;
+    private final JPanel cardsPanel;
 
     public InventoryPanel() {
-        this.tableModel = new InventoryTableModel();
-        this.inventoryTable = new JTable(tableModel);
-        initializeUI();
-    }
-
-    private void initializeUI() {
         setLayout(new BorderLayout());
-        inventoryTable.setRowHeight(64); // adjust based on your icon size
+        setBackground(Color.WHITE);
 
-        // Add image renderer for column 1 (product image)
-        inventoryTable.getColumnModel().getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
-            @Override
-            public void setValue(Object value) {
-                if (value instanceof ImageIcon) {
-                    setIcon((ImageIcon) value);
-                    setText(""); // hide text
-                } else {
-                    setIcon(null);
-                    super.setValue(value);
-                }
-            }
-        });
+        cardsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 15));
+        cardsPanel.setBackground(Color.WHITE);
 
-        add(new JScrollPane(inventoryTable), BorderLayout.CENTER);
+        JScrollPane scrollPane = new JScrollPane(cardsPanel);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(Color.WHITE);
+
+        add(scrollPane, BorderLayout.CENTER);
     }
 
     public void setInventoryItems(List<Inventory> items) {
-        tableModel.setInventoryItems(items);
+        cardsPanel.removeAll();
+        if (items != null && !items.isEmpty()) {
+            for (Inventory item : items) {
+                InventoryCard card = new InventoryCard(item);
+                card.addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseClicked(java.awt.event.MouseEvent evt) {
+                        cardsPanel.getComponent(0).setBackground(Color.WHITE);
+                        card.setBackground(card.getStockColor().darker());
+                    }
+                });
+                cardsPanel.add(card);
+            }
+        } else {
+            JLabel emptyLabel = new JLabel("No inventory items found", SwingConstants.CENTER);
+            emptyLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            cardsPanel.add(emptyLabel);
+        }
+        cardsPanel.revalidate();
+        cardsPanel.repaint();
+    }
+
+    public Color getCardColor(Inventory item) {
+        int quantity = item.getQuantity();
+        if (quantity <= 0)
+            return new Color(255, 220, 220); // red-ish
+        if (quantity <= 5)
+            return new Color(255, 255, 200); // yellow-ish
+        return new Color(220, 255, 220); // green-ish
     }
 
     public Inventory getSelectedInventoryItem() {
-        int row = inventoryTable.getSelectedRow();
-        if (row < 0)
-            return null;
-        return tableModel.getInventoryAt(row);
-    }
-
-    private static class InventoryTableModel extends AbstractTableModel {
-        private List<Inventory> items = new ArrayList<>();
-        private final String[] columnNames = {
-                "Inventory ID", "Product Image", "Category", "Size", "Sugar Level", "Price", "Quantity"
-        };
-
-        public void setInventoryItems(List<Inventory> items) {
-            this.items = items != null ? items : new ArrayList<>();
-            fireTableDataChanged();
+        for (Component comp : cardsPanel.getComponents()) {
+            if (comp instanceof InventoryCard && comp.getBackground().equals(comp.getBackground().darker())) {
+                return ((InventoryCard) comp).getInventory();
+            }
         }
-
-        public Inventory getInventoryAt(int row) {
-            return items.get(row);
-        }
-
-        @Override
-        public int getRowCount() {
-            return items.size();
-        }
-
-        @Override
-        public int getColumnCount() {
-            return columnNames.length;
-        }
-
-        @Override
-        public String getColumnName(int col) {
-            return columnNames[col];
-        }
-
-        @Override
-        public Object getValueAt(int row, int col) {
-            Inventory inv = items.get(row);
-            return switch (col) {
-                case 0 -> inv.getId();
-                case 1 -> inv.getProductImage();
-                case 2 -> inv.getProductCategory();
-                case 3 -> inv.getProductSize();
-                case 4 -> inv.getProductSugarLevel();
-                case 5 -> inv.getProductPrice();
-                case 6 -> inv.getQuantity();
-                default -> null;
-            };
-        }
-
+        return null;
     }
 }

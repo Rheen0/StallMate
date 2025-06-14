@@ -9,105 +9,91 @@ import java.awt.event.MouseEvent;
 
 public class ProductCard extends JPanel {
     private final Product product;
-    private final JLabel imageLabel;
-    private final JLabel nameLabel;
-    private final JLabel priceLabel;
-    private boolean selected = false;
-    private static final Color SELECTED_COLOR = new Color(200, 230, 255);
+    private final int currentStock;
+    private static final Font TITLE_FONT = new Font("Segoe UI", Font.BOLD, 12);
+    private static final Font PRICE_FONT = new Font("Segoe UI", Font.BOLD, 14);
+    private static final Font STOCK_FONT = new Font("Segoe UI", Font.PLAIN, 11);
+    private static final Color SELECTED_COLOR = new Color(200, 230, 255); // Example selected color
 
-    public ProductCard(Product product) {
+    public ProductCard(Product product, int currentStock) {
         this.product = product;
-        setLayout(new BorderLayout());
+        this.currentStock = currentStock;
+        setLayout(new BorderLayout(5, 5));
         setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-        setPreferredSize(new Dimension(150, 180));
-        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+        setBackground(getBackgroundColor());
+        setPreferredSize(new Dimension(160, 190));
+        initializeComponents();
+    }
 
-        // Image
-        imageLabel = new JLabel();
+    public Color getBackgroundColor() {
+        return currentStock > 0 ? Color.WHITE : new Color(255, 220, 220);
+    }
+
+    public Color getSelectedColor() {
+        return SELECTED_COLOR;
+    }
+
+    private void initializeComponents() {
+        JLabel imageLabel = new JLabel();
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        updateImage();
+        loadProductImage(imageLabel);
 
-        // Name (Category + Size)
-        nameLabel = new JLabel(
-                "<html><center>" + product.getCategory() + "<br>" + product.getSize() + "</center></html>");
-        nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        nameLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        JPanel infoPanel = new JPanel(new GridLayout(3, 1, 5, 5));
+        infoPanel.setOpaque(false);
 
-        // Price
-        priceLabel = new JLabel(String.format("₱%.2f", product.getPrice()));
-        priceLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        priceLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        priceLabel.setForeground(new Color(0, 100, 0));
+        JLabel nameLabel = new JLabel(product.getCategory(), SwingConstants.CENTER);
+        nameLabel.setFont(TITLE_FONT);
 
-        // Layout
-        JPanel textPanel = new JPanel(new GridLayout(2, 1, 0, 5));
-        textPanel.setOpaque(false);
-        textPanel.add(nameLabel);
-        textPanel.add(priceLabel);
+        JLabel priceLabel = new JLabel(String.format("₱%.2f", product.getPrice()), SwingConstants.CENTER);
+        priceLabel.setFont(PRICE_FONT);
+
+        JLabel stockLabel = new JLabel(getStockText(), SwingConstants.CENTER);
+        stockLabel.setFont(STOCK_FONT);
+        if (currentStock <= 0) {
+            stockLabel.setForeground(Color.RED);
+        }
+
+        infoPanel.add(nameLabel);
+        infoPanel.add(priceLabel);
+        infoPanel.add(stockLabel);
 
         add(imageLabel, BorderLayout.CENTER);
-        add(textPanel, BorderLayout.SOUTH);
-
-        // Add hover and click effects
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                setSelected(!isSelected());
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (!selected) {
-                    setBackground(new Color(240, 240, 240));
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (!selected) {
-                    setBackground(null);
-                }
-            }
-        });
+        add(infoPanel, BorderLayout.SOUTH);
     }
 
-    private void updateImage() {
-        if (product.getImage() != null && !product.getImage().isEmpty()) {
-            try {
+    private String getStockText() {
+        return currentStock > 0 ? "Available: " + currentStock : "OUT OF STOCK";
+    }
+
+    private void loadProductImage(JLabel imageLabel) {
+        try {
+            if (product.getImage() != null && !product.getImage().isEmpty()) {
                 java.net.URL imgURL = getClass().getResource("/assets/" + product.getImage());
                 if (imgURL != null) {
-                    ImageIcon originalIcon = new ImageIcon(imgURL);
-                    Image scaledImage = originalIcon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+                    ImageIcon icon = new ImageIcon(imgURL);
+                    Image scaledImage = icon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
                     imageLabel.setIcon(new ImageIcon(scaledImage));
                 } else {
-                    setFallbackIcon();
+                    imageLabel.setIcon(UIManager.getIcon("OptionPane.warningIcon"));
+                    imageLabel.setText("No Image");
                 }
-            } catch (Exception e) {
-                setFallbackIcon();
+            } else {
+                imageLabel.setIcon(UIManager.getIcon("OptionPane.informationIcon"));
+                imageLabel.setText("No Image");
             }
-        } else {
-            setFallbackIcon();
+        } catch (Exception e) {
+            imageLabel.setIcon(UIManager.getIcon("OptionPane.errorIcon"));
+            imageLabel.setText("Image Error");
         }
-    }
-
-    private void setFallbackIcon() {
-        imageLabel.setIcon(UIManager.getIcon("OptionPane.informationIcon"));
-        imageLabel.setText("");
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-        setBackground(selected ? SELECTED_COLOR : null);
-        repaint();
-    }
-
-    public boolean isSelected() {
-        return selected;
     }
 
     public Product getProduct() {
         return product;
+    }
+
+    public int getCurrentStock() {
+        return currentStock;
     }
 }

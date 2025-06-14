@@ -1,121 +1,73 @@
 package src.main.java.com.puplagoon.pos.view.components;
 
 import src.main.java.com.puplagoon.pos.model.dto.Product;
+import src.main.java.com.puplagoon.pos.service.InventoryService;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
+import java.sql.SQLException;
 import java.util.List;
 
 public class ProductPanel extends JPanel {
-    private final JPanel cardPanel;
-    private ProductCard selectedCard = null;
+    private final JPanel cardsPanel;
+    private final InventoryService inventoryService;
+    private ProductCard selectedCard;
 
-    public ProductPanel() {
+    public ProductPanel(InventoryService inventoryService) {
+        this.inventoryService = inventoryService;
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
 
-        // Create panel for cards with wrapping flow layout
-        cardPanel = new JPanel(new WrapLayout(FlowLayout.LEFT, 10, 10));
-        cardPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        cardPanel.setBackground(Color.WHITE);
+        cardsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 15));
+        cardsPanel.setBackground(Color.WHITE);
 
-        // Wrap in scroll pane
-        JScrollPane scrollPane = new JScrollPane(cardPanel);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.getViewport().setBackground(Color.WHITE);
+        JScrollPane scrollPane = new JScrollPane(cardsPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(Color.WHITE);
 
         add(scrollPane, BorderLayout.CENTER);
     }
 
     public void setProducts(List<Product> products) {
-        cardPanel.removeAll();
-        selectedCard = null;
-
+        cardsPanel.removeAll();
+        selectedCard = null; // Reset selection when products are reloaded
+        
         if (products != null && !products.isEmpty()) {
             for (Product product : products) {
-                ProductCard card = new ProductCard(product);
-                card.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        if (selectedCard != null) {
-                            selectedCard.setSelected(false);
+                try {
+                    int stock = inventoryService.getStockForProduct(product.getProductId());
+                    ProductCard card = new ProductCard(product, stock);
+                    
+                    card.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            // Reset previous selection
+                            if (selectedCard != null) {
+                                selectedCard.setBackground(selectedCard.getBackgroundColor());
+                            }
+                            // Set new selection
+                            selectedCard = card;
+                            card.setBackground(card.getBackgroundColor().darker());
                         }
-                        selectedCard = card;
-                        selectedCard.setSelected(true);
-                    }
-                });
-                cardPanel.add(card);
+                    });
+                    
+                    cardsPanel.add(card);
+                } catch (SQLException e) {
+                    cardsPanel.add(new ProductCard(product, 0));
+                }
             }
         } else {
             JLabel emptyLabel = new JLabel("No products available", SwingConstants.CENTER);
-            emptyLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            cardPanel.add(emptyLabel);
+            emptyLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            cardsPanel.add(emptyLabel);
         }
-
-        cardPanel.revalidate();
-        cardPanel.repaint();
+        cardsPanel.revalidate();
+        cardsPanel.repaint();
     }
 
     public Product getSelectedProduct() {
         return selectedCard != null ? selectedCard.getProduct() : null;
-    }
-}
-
-// Helper class for wrapping layout
-class WrapLayout extends FlowLayout {
-    public WrapLayout() {
-        super();
-    }
-
-    public WrapLayout(int align, int hgap, int vgap) {
-        super(align, hgap, vgap);
-    }
-
-    @Override
-    public Dimension preferredLayoutSize(Container target) {
-        synchronized (target.getTreeLock()) {
-            int targetWidth = target.getSize().width;
-            if (targetWidth == 0) {
-                targetWidth = Integer.MAX_VALUE;
-            }
-
-            int hgap = getHgap();
-            int vgap = getVgap();
-            Insets insets = target.getInsets();
-            int maxWidth = targetWidth - (insets.left + insets.right + hgap * 2);
-
-            Dimension dim = new Dimension(0, 0);
-            int rowWidth = 0;
-            int rowHeight = 0;
-
-            for (Component comp : target.getComponents()) {
-                if (comp.isVisible()) {
-                    Dimension d = comp.getPreferredSize();
-                    if (rowWidth + d.width > maxWidth) {
-                        dim.width = Math.max(dim.width, rowWidth);
-                        dim.height += rowHeight + vgap;
-                        rowWidth = 0;
-                        rowHeight = 0;
-                    }
-                    if (rowWidth != 0) {
-                        rowWidth += hgap;
-                    }
-                    rowWidth += d.width;
-                    rowHeight = Math.max(rowHeight, d.height);
-                }
-            }
-            dim.width = Math.max(dim.width, rowWidth);
-            dim.height += rowHeight;
-
-            dim.width += insets.left + insets.right;
-            dim.height += insets.top + insets.bottom + vgap * 2;
-            return dim;
-        }
     }
 }

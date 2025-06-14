@@ -43,32 +43,24 @@ public class OrderPanel extends JPanel {
         add(new JScrollPane(orderTable), BorderLayout.CENTER);
     }
 
-    public void addOrderItem(String imageFilename, String productName, int qty, double price, double subtotal) {
-        // Load image
+    public void addOrderItem(OrderDetail detail) {
         ImageIcon icon = null;
-        if (imageFilename != null && !imageFilename.isEmpty()) {
-            java.net.URL imgURL = getClass().getResource("/assets/" + imageFilename);
+        if (detail.getProduct().getImage() != null) {
+            java.net.URL imgURL = getClass().getResource("/assets/" + detail.getProduct().getImage());
             if (imgURL != null) {
-                icon = new ImageIcon(
-                        new ImageIcon(imgURL).getImage()
-                                .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
+                icon = new ImageIcon(new ImageIcon(imgURL).getImage()
+                        .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
             }
         }
-
         tableModel.addRow(new Object[] {
                 icon,
-                productName,
-                qty,
-                String.format("₱%.2f", price),
-                String.format("₱%.2f", subtotal)
+                detail.getProduct().getCategory(),
+                detail.getQuantity(),
+                String.format("₱%.2f", detail.getUnitPrice()),
+                String.format("₱%.2f", detail.getSubtotal())
         });
 
         // Also store in our internal list
-        OrderDetail detail = new OrderDetail();
-        detail.setProduct(null); // we only store the name & price here; alternatively, pass in Product
-        detail.setQuantity(qty);
-        detail.setUnitPrice(price);
-        detail.setSubtotal(subtotal);
         orderDetails.add(detail);
     }
 

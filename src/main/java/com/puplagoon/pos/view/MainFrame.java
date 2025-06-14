@@ -1,62 +1,91 @@
 package src.main.java.com.puplagoon.pos.view;
 
+import src.main.java.com.puplagoon.pos.controller.*;
+import src.main.java.com.puplagoon.pos.model.dao.*;
 import src.main.java.com.puplagoon.pos.model.dto.User;
+import src.main.java.com.puplagoon.pos.service.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
+import src.main.java.com.puplagoon.pos.view.components.ProductPanel;
 
 public class MainFrame extends JFrame {
     private final User currentUser;
-
-    // Sub-views
-    private final OrderView orderView;
-    private final InventoryView inventoryView;
-    private final UserManagementView userManagementView; // only if admin
 
     public MainFrame(User user) {
         super("StallMate");
         this.currentUser = user;
 
-        this.orderView = new OrderView();
-        this.inventoryView = new InventoryView();
-        this.userManagementView = new UserManagementView();
+        // Initialize services
+        InventoryService inventoryService = new InventoryService(new InventoryDAO());
+        OrderService orderService = new OrderService(new OrderDAO(), new ProductDAO());
+        UserService userService = new UserService(new UserDAO());
 
-        initializeUI();
+        // Initialize views with their dependencies
+        ProductPanel productPanel = new ProductPanel(inventoryService);
+        OrderView orderView = new OrderView(productPanel);
+        InventoryView inventoryView = new InventoryView(currentUser);
+        UserManagementView userManagementView = "admin".equals(user.getRole()) ? new UserManagementView() : null;
+
+        // Initialize controllers
+        new OrderController(orderView, currentUser, inventoryService);
+        new InventoryController(inventoryView, currentUser);
+        if (userManagementView != null) {
+            new UserController(userManagementView, userService);
+        }
+
+        // Set up UI
+        initializeUI(orderView, inventoryView, userManagementView);
     }
 
-    private void initializeUI() {
+    private void initializeUI(OrderView orderView, InventoryView inventoryView,
+            UserManagementView userManagementView) {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(900, 650);
-        setLocationRelativeTo(null); // center on screen
+        setLocationRelativeTo(null);
 
         // Create top panel with logo and welcome message
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Add small logo on the left
-        JLabel logoLabel = createLogoLabel(50); // 50px height
-        topPanel.add(logoLabel, BorderLayout.WEST);
+        // Add logo
+        topPanel.add(createLogoLabel(50), BorderLayout.WEST);
 
-        // Welcome message in center
+        // Welcome message
         JLabel welcomeLabel = new JLabel(
                 "Welcome, " + currentUser.getName() + " (" + currentUser.getRole() + ")");
         welcomeLabel.setHorizontalAlignment(SwingConstants.CENTER);
         topPanel.add(welcomeLabel, BorderLayout.CENTER);
 
-        // Left: JTabbedPane
+        // Logout button on the right
+        JButton logoutButton = new JButton("Logout");
+        logoutButton.addActionListener(e -> logout());
+        topPanel.add(logoutButton, BorderLayout.EAST);
+
+        // Create tabbed pane
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Orders", orderView);
         tabbedPane.addTab("Inventory", inventoryView);
 
-        if ("admin".equalsIgnoreCase(currentUser.getRole())) {
+        // Add user management tab if admin
+        if (userManagementView != null) {
             tabbedPane.addTab("Users", userManagementView);
         }
 
-        // Lay out top + center
         setLayout(new BorderLayout());
         add(topPanel, BorderLayout.NORTH);
         add(tabbedPane, BorderLayout.CENTER);
+    }
+
+    private void logout() {
+        this.dispose(); // Close the current window
+        // Show login window again
+        SwingUtilities.invokeLater(() -> {
+            LoginView loginView = new LoginView();
+            new AuthController(loginView);
+            loginView.setVisible(true);
+        });
     }
 
     private JLabel createLogoLabel(int height) {
@@ -64,7 +93,6 @@ public class MainFrame extends JFrame {
             URL imageUrl = getClass().getClassLoader().getResource("resources/logo.png");
             if (imageUrl != null) {
                 ImageIcon originalIcon = new ImageIcon(imageUrl);
-                // Scale proportionally to desired height
                 int width = (int) (originalIcon.getIconWidth() *
                         ((double) height / originalIcon.getIconHeight()));
                 Image scaledImage = originalIcon.getImage().getScaledInstance(
@@ -74,19 +102,6 @@ public class MainFrame extends JFrame {
         } catch (Exception e) {
             System.err.println("Error loading logo: " + e.getMessage());
         }
-        return new JLabel(); // Return empty label if image fails to load
-    }
-
-    // Expose getters so controllers can hook into each sub-view
-    public OrderView getOrderView() {
-        return orderView;
-    }
-
-    public InventoryView getInventoryView() {
-        return inventoryView;
-    }
-
-    public UserManagementView getUserManagementView() {
-        return userManagementView;
+        return new JLabel();
     }
 }

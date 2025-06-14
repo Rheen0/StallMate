@@ -2,6 +2,8 @@ package src.main.java.com.puplagoon.pos.model.dao;
 
 import src.main.java.com.puplagoon.pos.model.dto.User;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserDAO {
     private final Connection connection;
@@ -10,18 +12,19 @@ public class UserDAO {
         this.connection = DBConnection.getConnection();
     }
 
-    // public User findAllUsers() throws SQLException {
-    // String query = "SELECT * FROM Users";
-    // try (Statement stmt = connection.createStatement();
-    // ResultSet rs = stmt.executeQuery(query)) {
-    // if (rs.next()) {
-    // return mapResultSetToUser(rs);
-    // }
-    // }
-    // return null; // or throw an exception if no users found
-    // }
+    public List<User> findAllUsers() throws SQLException {
+        List<User> users = new ArrayList<>();
+        String query = "SELECT * FROM Users";
 
-    // These are AI Generated
+        try (Statement stmt = connection.createStatement();
+                ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                users.add(mapResultSetToUser(rs));
+            }
+        }
+        return users;
+    }
+
     public boolean insertUser(User user) throws SQLException {
         String query = "INSERT INTO Users (name, user_name, password, role) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
