@@ -43,7 +43,6 @@ public class ProductDAO {
         product.setImage(rs.getString("image"));
         product.setCategory(rs.getString("category"));
         product.setSize(rs.getString("size"));
-        product.setSugarLevel(rs.getString("sugar_level"));
         product.setPrice(rs.getDouble("price"));
         return product;
     }

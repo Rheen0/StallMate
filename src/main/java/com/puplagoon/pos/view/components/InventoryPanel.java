@@ -55,7 +55,7 @@ public class InventoryPanel extends JPanel {
     private static class InventoryTableModel extends AbstractTableModel {
         private List<Inventory> items = new ArrayList<>();
         private final String[] columnNames = {
-                "Inventory ID", "Product Image", "Category", "Size", "Sugar Level", "Price", "Quantity"
+                "Inventory ID", "Product Image", "Category", "Size", "Price", "Quantity"
         };
 
         public void setInventoryItems(List<Inventory> items) {
@@ -90,9 +90,8 @@ public class InventoryPanel extends JPanel {
                 case 1 -> inv.getProductImage();
                 case 2 -> inv.getProductCategory();
                 case 3 -> inv.getProductSize();
-                case 4 -> inv.getProductSugarLevel();
-                case 5 -> inv.getProductPrice();
-                case 6 -> inv.getQuantity();
+                case 4 -> inv.getProductPrice();
+                case 5 -> inv.getQuantity();
                 default -> null;
             };
         }

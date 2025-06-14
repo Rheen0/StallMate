@@ -5,7 +5,6 @@ public class Product {
     private String image;
     private String category;
     private String size;
-    private String sugarLevel;
     private double price;
 
     // Getters and setters
@@ -41,13 +40,13 @@ public class Product {
         this.size = size;
     }
 
-    public String getSugarLevel() {
-        return sugarLevel;
-    }
+    // public String getSugarLevel() {
+    //     return sugarLevel;
+    // }
 
-    public void setSugarLevel(String sugarLevel) {
-        this.sugarLevel = sugarLevel;
-    }
+    // public void setSugarLevel(String sugarLevel) {
+    //     this.sugarLevel = sugarLevel;
+    // }
 
     public double getPrice() {
         return price;

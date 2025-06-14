@@ -19,14 +19,13 @@ public class Inventory {
     }
 
     public Inventory(int id, int productId, int quantity,
-            String productCategory, String productSize, String productSugarLevel,
+            String productCategory, String productSize,
             double productPrice, ImageIcon productImage) {
         this.id = id;
         this.productId = productId;
         this.quantity = quantity;
         this.productCategory = productCategory;
         this.productSize = productSize;
-        this.productSugarLevel = productSugarLevel;
         this.productPrice = productPrice;
         this.productImage = productImage;
     }
@@ -79,9 +78,9 @@ public class Inventory {
         return productSize;
     }
 
-    public String getProductSugarLevel() {
-        return productSugarLevel;
-    }
+    // public String getProductSugarLevel() {
+    //     return productSugarLevel;
+    // }
 
     public double getProductPrice() {
         return productPrice;
@@ -99,9 +98,9 @@ public class Inventory {
         this.productSize = size;
     }
 
-    public void setProductSugarLevel(String sugarLevel) {
-        this.productSugarLevel = sugarLevel;
-    }
+    // public void setProductSugarLevel(String sugarLevel) {
+    //     this.productSugarLevel = sugarLevel;
+    // }
 
     public void setProductPrice(double price) {
         this.productPrice = price;

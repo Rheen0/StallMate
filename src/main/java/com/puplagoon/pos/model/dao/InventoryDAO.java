@@ -17,26 +17,31 @@ public class InventoryDAO {
     public List<Inventory> findAll() throws SQLException {
         List<Inventory> inventory = new ArrayList<>();
         String query = """
-                    SELECT
-                        i.inventory_id,
-                        i.product_id,
-                        i.quantity_in_stock,
-                        p.category,
-                        p.size,
-                        p.sugar_level,
-                        p.price,
-                        p.image
-                    FROM Inventory i
-                    JOIN Product p ON i.product_id = p.product_id
+                SELECT
+                    i.inventory_id,
+                    i.product_id,
+                    i.quantity_in_stock,
+                    p.category,
+                    p.size,
+                    p.price,
+                    p.image
+                FROM Inventory i
+                JOIN Product p ON i.product_id = p.product_id
                 """;
+
+        System.out.println("Executing query: " + query); // Debug log
 
         try (PreparedStatement stmt = connection.prepareStatement(query);
                 ResultSet rs = stmt.executeQuery()) {
+
             while (rs.next()) {
-                inventory.add(mapResultSetToInventory(rs));
+                System.out.println("Found inventory item with product ID: " + rs.getInt("product_id")); // Debug
+                Inventory item = mapResultSetToInventory(rs);
+                inventory.add(item);
             }
         }
 
+        System.out.println("Total inventory items loaded: " + inventory.size());
         return inventory;
     }
 
@@ -52,24 +57,37 @@ public class InventoryDAO {
     // Pinalitan ko yung DTO class to match inventory
     private Inventory mapResultSetToInventory(ResultSet rs) throws SQLException {
         Inventory item = new Inventory();
+
+        // Set inventory fields
         item.setId(rs.getInt("inventory_id"));
         item.setProductId(rs.getInt("product_id"));
         item.setQuantity(rs.getInt("quantity_in_stock"));
 
+        // Set product fields
         item.setProductCategory(rs.getString("category"));
         item.setProductSize(rs.getString("size"));
-        item.setProductSugarLevel(rs.getString("sugar_level"));
         item.setProductPrice(rs.getDouble("price"));
 
-        String imagePath = rs.getString("image"); // example: "coffee.png"
+        // Handle image
+        String imagePath = rs.getString("image");
         if (imagePath != null && !imagePath.isBlank()) {
-            java.net.URL imgURL = getClass().getResource("/assets/" + imagePath);
-            if (imgURL != null) {
-                item.setProductImage(new ImageIcon(imgURL));
-            } else {
-                item.setProductImage(null); // or handle missing image as needed
+            try {
+                java.net.URL imgURL = getClass().getResource("/assets/" + imagePath);
+                if (imgURL != null) {
+                    item.setProductImage(new ImageIcon(imgURL));
+                } else {
+                    System.err.println("Image not found: " + imagePath);
+                    item.setProductImage(null);
+                }
+            } catch (Exception e) {
+                System.err.println("Error loading image: " + imagePath);
+                e.printStackTrace();
+                item.setProductImage(null);
             }
+        } else {
+            item.setProductImage(null);
         }
+
         return item;
     }
 
