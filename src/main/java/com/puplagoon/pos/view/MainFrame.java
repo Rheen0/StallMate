@@ -13,16 +13,18 @@ public class MainFrame extends JFrame {
     private final OrderView orderView;
     private final InventoryView inventoryView;
     private final UserManagementView userManagementView; // only if admin
+    private final JButton logoutButton;
 
     public MainFrame(User user) {
         super("StallMate");
         this.currentUser = user;
-
         this.orderView = new OrderView();
         this.inventoryView = new InventoryView();
         this.userManagementView = new UserManagementView();
+        this.logoutButton = new JButton("Logout");
 
         initializeUI();
+        setupLogoutButton();
     }
 
     private void initializeUI() {
@@ -44,6 +46,11 @@ public class MainFrame extends JFrame {
         welcomeLabel.setHorizontalAlignment(SwingConstants.CENTER);
         topPanel.add(welcomeLabel, BorderLayout.CENTER);
 
+        // Logout button on the right
+        JPanel logoutPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        logoutPanel.add(logoutButton);
+        topPanel.add(logoutPanel, BorderLayout.EAST);
+
         // Left: JTabbedPane
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Orders", orderView);
@@ -57,6 +64,18 @@ public class MainFrame extends JFrame {
         setLayout(new BorderLayout());
         add(topPanel, BorderLayout.NORTH);
         add(tabbedPane, BorderLayout.CENTER);
+    }
+
+    private void setupLogoutButton() {
+        logoutButton.addActionListener(e -> {
+            this.dispose(); // Close the main frame
+            // Show login view again
+            SwingUtilities.invokeLater(() -> {
+                LoginView loginView = new LoginView();
+                new src.main.java.com.puplagoon.pos.controller.AuthController(loginView);
+                loginView.setVisible(true);
+            });
+        });
     }
 
     private JLabel createLogoLabel(int height) {
