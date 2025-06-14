@@ -22,22 +22,7 @@ public class InventoryPanel extends JPanel {
 
     private void initializeUI() {
         setLayout(new BorderLayout());
-        inventoryTable.setRowHeight(64); // adjust based on your icon size
-
-        // Add image renderer for column 1 (product image)
-        inventoryTable.getColumnModel().getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
-            @Override
-            public void setValue(Object value) {
-                if (value instanceof ImageIcon) {
-                    setIcon((ImageIcon) value);
-                    setText(""); // hide text
-                } else {
-                    setIcon(null);
-                    super.setValue(value);
-                }
-            }
-        });
-
+        inventoryTable.setRowHeight(30); // Reduced row height since we don't need space for images
         add(new JScrollPane(inventoryTable), BorderLayout.CENTER);
     }
 
@@ -55,7 +40,7 @@ public class InventoryPanel extends JPanel {
     private static class InventoryTableModel extends AbstractTableModel {
         private List<Inventory> items = new ArrayList<>();
         private final String[] columnNames = {
-                "Inventory ID", "Product Image", "Category", "Size", "Price", "Quantity"
+                "ID", "Category", "Size", "Price", "Quantity"
         };
 
         public void setInventoryItems(List<Inventory> items) {
@@ -87,11 +72,10 @@ public class InventoryPanel extends JPanel {
             Inventory inv = items.get(row);
             return switch (col) {
                 case 0 -> inv.getId();
-                case 1 -> inv.getProductImage();
-                case 2 -> inv.getProductCategory();
-                case 3 -> inv.getProductSize();
-                case 4 -> inv.getProductPrice();
-                case 5 -> inv.getQuantity();
+                case 1 -> inv.getProductCategory();
+                case 2 -> inv.getProductSize();
+                case 3 -> inv.getProductPrice();
+                case 4 -> inv.getQuantity();
                 default -> null;
             };
         }

@@ -38,7 +38,7 @@ public class InventoryView extends JPanel {
         updatePanel.add(updateQtyField);
         updatePanel.add(updateStockButton);
 
-        add(addPanel);
+        // add(addPanel);
         add(updatePanel);
     }
 
