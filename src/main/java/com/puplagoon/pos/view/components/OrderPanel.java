@@ -18,11 +18,9 @@ public class OrderPanel extends JPanel {
 
     public OrderPanel() {
         this.tableModel = new DefaultTableModel(
-                new Object[] { "Image", "Product", "Quantity", "Price", "Subtotal" }, 0) {
+                new Object[] { "Product", "Quantity", "Price", "Subtotal" }, 0) {
             @Override
             public Class<?> getColumnClass(int column) {
-                if (column == 0)
-                    return ImageIcon.class;
                 return Object.class;
             }
 
@@ -30,14 +28,13 @@ public class OrderPanel extends JPanel {
             public boolean isCellEditable(int row, int column) {
                 return false; // Make table non-editable
             }
-            
-            
+
         };
-        
+
         this.orderTable = new JTable(tableModel);
-        orderTable.setRowHeight(50);
+        orderTable.setRowHeight(40);
         initializeUI();
-        
+
     }
 
     private void initializeUI() {
@@ -51,10 +48,10 @@ public class OrderPanel extends JPanel {
         // Logic to find and update the corresponding row in the order table
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             // Check if the description in the current row matches the given description
-            String existingDescription = (String) tableModel.getValueAt(i, 1); // Column 1 is the "Product" column
+            String existingDescription = (String) tableModel.getValueAt(i, 0); // Column 1 is the "Product" column
             if (existingDescription.equals(description)) {
                 // Update the row with the new values
-                tableModel.setValueAt(image, i, 0); // Update the "Image" column
+                // tableModel.setValueAt(image, i, 0); // Update the "Image" column
                 tableModel.setValueAt(description, i, 1); // Update the "Product" column
                 tableModel.setValueAt(quantity, i, 2); // Update the "Quantity" column
                 tableModel.setValueAt(String.format("₱%.2f", unitPrice), i, 3); // Update the "Price" column
@@ -63,34 +60,34 @@ public class OrderPanel extends JPanel {
             }
         }
     }
+
     public void addOrderItem(Product product, String productName, int qty, double price, double subtotal) {
-    // Load image
-    ImageIcon icon = null;
-    if (product.getImage() != null && !product.getImage().isEmpty()) {
-        java.net.URL imgURL = getClass().getResource("/assets/" + product.getImage());
-        if (imgURL != null) {
-            icon = new ImageIcon(
-                    new ImageIcon(imgURL).getImage()
-                            .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
+        // Load image
+        ImageIcon icon = null;
+        if (product.getImage() != null && !product.getImage().isEmpty()) {
+            java.net.URL imgURL = getClass().getResource("/assets/" + product.getImage());
+            if (imgURL != null) {
+                icon = new ImageIcon(
+                        new ImageIcon(imgURL).getImage()
+                                .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
+            }
         }
+
+        tableModel.addRow(new Object[] {
+                productName,
+                qty,
+                String.format("₱%.2f", price),
+                String.format("₱%.2f", subtotal)
+        });
+
+        // Also store in our internal list
+        OrderDetail detail = new OrderDetail();
+        detail.setProduct(product); // Set the product here
+        detail.setQuantity(qty);
+        detail.setUnitPrice(price);
+        detail.setSubtotal(subtotal);
+        orderDetails.add(detail);
     }
-
-    tableModel.addRow(new Object[] {
-            icon,
-            productName,
-            qty,
-            String.format("₱%.2f", price),
-            String.format("₱%.2f", subtotal)
-    });
-
-    // Also store in our internal list
-    OrderDetail detail = new OrderDetail();
-    detail.setProduct(product); // Set the product here
-    detail.setQuantity(qty);
-    detail.setUnitPrice(price);
-    detail.setSubtotal(subtotal);
-    orderDetails.add(detail);
-}
 
     public List<OrderDetail> getAllOrderDetails() {
         return new ArrayList<>(orderDetails);

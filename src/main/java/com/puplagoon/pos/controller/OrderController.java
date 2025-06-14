@@ -44,23 +44,42 @@ public class OrderController {
     private void addItemToOrder() {
         Product selected = view.getSelectedProduct();
         int qty = view.getSelectedQuantity();
+
         if (selected != null && qty > 0) {
-            OrderDetail detail = new OrderDetail();
-            detail.setProduct(selected);
-            detail.setQuantity(qty);
-            detail.setUnitPrice(selected.getPrice());
-            detail.setSubtotal(selected.getPrice() * qty);
+            // Create confirmation message
+            String confirmationMessage = String.format(
+                    "Add to Order:\n\nProduct: %s %s\nQuantity: %d\nPrice: ₱%.2f\nSubtotal: ₱%.2f\n\nConfirm?",
+                    selected.getCategory(),
+                    selected.getSize(),
+                    qty,
+                    selected.getPrice(),
+                    selected.getPrice() * qty);
 
-            view.addOrderDetail(detail);
-            view.updateOrderTotal(detail.getSubtotal());
-            // Add the item to the order and increment the counter
-            order.addItem(detail);
+            // Show confirmation dialog
+            int confirm = JOptionPane.showConfirmDialog(
+                    view,
+                    confirmationMessage,
+                    "Confirm Add to Order",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
 
-            // Update the view (if necessary)
-            view.addOrderDetail(detail);
+            if (confirm == JOptionPane.YES_OPTION) {
+                // User confirmed - proceed with adding to order
+                OrderDetail detail = new OrderDetail();
+                detail.setProduct(selected);
+                detail.setQuantity(qty);
+                detail.setUnitPrice(selected.getPrice());
+                detail.setSubtotal(selected.getPrice() * qty);
 
-            // Log the total items for debugging
-            System.out.println("Total items in order: " + order.getTotalItems());
+                view.addOrderDetail(detail);
+                view.updateOrderTotal(detail.getSubtotal());
+                order.addItem(detail);
+
+                System.out.println("Total items in order: " + order.getTotalItems());
+            } else {
+                // User cancelled - do nothing or show message
+                System.out.println("Add to order cancelled by user");
+            }
         } else {
             view.showErrorMessage("Please select a valid product and quantity.");
         }
@@ -74,6 +93,34 @@ public class OrderController {
             return;
         }
 
+        // Build checkout confirmation message
+        StringBuilder checkoutMessage = new StringBuilder();
+        checkoutMessage.append("Confirm Checkout:\n\n");
+        checkoutMessage.append(String.format("%-15s %-10s %-8s %-10s\n", "Product", "Qty", "Price", "Subtotal"));
+        checkoutMessage.append("----------------------------------------\n");
+
+        for (OrderDetail detail : details) {
+            Product p = detail.getProduct();
+            checkoutMessage.append(String.format("%-15s %-10d ₱%-7.2f ₱%-10.2f\n",
+                    p.getCategory() + " " + p.getSize(),
+                    detail.getQuantity(),
+                    detail.getUnitPrice(),
+                    detail.getSubtotal()));
+        }
+
+        checkoutMessage.append("\nTotal: ₱").append(String.format("%.2f", calculateTotal(details)));
+        checkoutMessage.append("\n\nProceed with checkout?");
+
+        int confirm = JOptionPane.showConfirmDialog(
+                view,
+                checkoutMessage.toString(),
+                "Confirm Checkout",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+
+        if (confirm != JOptionPane.YES_OPTION) {
+            return; // User cancelled
+        }
         // Validate all products exist
         for (OrderDetail detail : details) {
             if (detail.getProduct() == null) {
