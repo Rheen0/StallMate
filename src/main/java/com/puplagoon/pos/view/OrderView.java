@@ -106,6 +106,7 @@ public class OrderView extends JPanel {
                 // Update the order panel to reflect the changes
                 orderPanel.updateOrderItem(
                     existingDetail.getProduct().getCategory(),
+                    existingDetail.getProduct().getSize(),
                     newQuantity,
                     existingDetail.getUnitPrice(),
                     existingDetail.getSubtotal()

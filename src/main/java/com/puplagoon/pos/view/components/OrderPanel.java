@@ -18,7 +18,7 @@ public class OrderPanel extends JPanel {
 
     public OrderPanel() {
         this.tableModel = new DefaultTableModel(
-                new Object[] { "Product", "Quantity", "Price", "Subtotal" }, 0) {
+                new Object[] { "Product", "Size", "Quantity", "Unit Price", "Subtotal" }, 0) {
             @Override
             public Class<?> getColumnClass(int column) {
                 return Object.class;
@@ -44,21 +44,20 @@ public class OrderPanel extends JPanel {
         add(new JScrollPane(orderTable), BorderLayout.CENTER);
     }
 
-    public void updateOrderItem(String productName, int quantity, double unitPrice, double subtotal) {
+    public void updateOrderItem(String productName, String size, int quantity, double unitPrice, double subtotal) {
         DefaultTableModel model = (DefaultTableModel) orderTable.getModel();
         for (int i = 0; i < model.getRowCount(); i++) {
-            if (model.getValueAt(i, 0).equals(productName)) { // Check if the product name matches
-                model.setValueAt(quantity, i, 1); // Update quantity
-                model.setValueAt(unitPrice, i, 2); // Update unit price
-                model.setValueAt(subtotal, i, 3); // Update subtotal
+            if (model.getValueAt(i, 0).equals(productName) && model.getValueAt(i, 1).equals(size)) { // Match product name and size
+                model.setValueAt(quantity, i, 2); // Update quantity
+                model.setValueAt(unitPrice, i, 3); // Update unit price
+                model.setValueAt(subtotal, i, 4); // Update subtotal
                 return; // Exit after updating
             }
         }
     }
 
     public void addOrderItem(Product product, int quantity, double unitPrice, double subtotal) {
-        DefaultTableModel model = (DefaultTableModel) orderTable.getModel();
-        model.addRow(new Object[] { product.getCategory(), quantity, unitPrice, subtotal });
+        tableModel.addRow(new Object[] { product.getCategory(), product.getSize(), quantity, unitPrice, subtotal });
     
         // Also store in our internal list
         OrderDetail detail = new OrderDetail();
